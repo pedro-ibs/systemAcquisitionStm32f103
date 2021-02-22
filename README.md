@@ -2,7 +2,7 @@
 Esse é um projeto com o objetivo de desenvolver um sistema de aquisição de dados utilizando o microcontrolador stm32f10, focando apenas no código embarcado no micro.
 
 
-## **Perparando o ambiente, Configurações visuais e extensões*
+## **Perparando o ambiente, Configurações visuais e extensões**
 
 pacotes para serem instalados:
 
