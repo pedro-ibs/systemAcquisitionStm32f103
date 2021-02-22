@@ -1,0 +1,118 @@
+{
+	"workbench.colorTheme": "Roseate",
+	"C_Cpp.updateChannel": "Insiders",
+	"editor.tabSize": 8,
+	"editor.insertSpaces": false,
+	"window.zoomLevel": -1,
+	"cmake.configureOnOpen": true,
+
+	"cSpell.language": "en, pt_BR",
+	"files.associations": {
+		"atomic": "cpp",
+		"cstdint": "cpp"
+	},
+	"todohighlight.include": [
+		"**/*.js",
+		"**/*.jsx",
+		"**/*.ts",
+		"**/*.tsx",
+		"**/*.html",
+		"**/*.php",
+		"**/*.css",
+		"**/*.scss",
+		"**/*.c",
+		"**/*.cpp",
+		"**/*.h",
+	],
+	"cSpell.userWords": [
+		"CCHR",
+		"GPIO",
+		"GPIOs",
+		"MOSI",
+		"Reciver",
+		"Smacros",
+		"WIFI",
+		"ctok",
+		"ifsp",
+		"molex",
+		"usart"
+	],
+	
+	"templateGenerator.fields.author": "Pedro Igor B. S.",
+	"templateGenerator.fields.email": "pedro.igor.ifsp@gmail.com",
+	"templateGenerator.fields.link": "https://github.com/pedro-ibs",
+
+	/*  configurações de cores do código  */
+	"editor.semanticTokenColorCustomizations": {
+		"rules": {
+			/*Class Template		 	templateType 		entity.name.type.class.templated*/
+			/*Enumerator				enumMember		variable.other.enummember*/
+			"enumMember": {
+				"foreground": "#9932cc",
+				// "fontStyle": "italic bold underline"
+				"fontStyle": ""
+			},
+
+			/*Event (C++/CLI)			event			variable.other.event*/
+			/*Function				function		entity.name.function*/
+			"function": {
+				"foreground": "#dda0dd",
+				"fontStyle": ""
+			},
+			
+			/*Function Template			templateFunction 	entity.name.function.templated*/			
+			/*Generic Type (C++/CLI) 		genericType		entity.name.type.class.generic*/
+			/*Global Variable 			variable.global 	variable.other.global*/
+			"variable.global": {
+				"foreground": "#cc397b",
+				"fontStyle": "bold"
+			},
+
+			/*Label					label			entity.name.label*/
+			/*Local Variable			variable.local		variable.other.local*/
+			"variable.local": {
+				"foreground": "#cc397b",
+				"fontStyle": ""
+			},
+
+			/*Macro					macro			entity.name.function.preprocessor*/
+			"macro": {
+				"foreground": "#e52b50",
+				"fontStyle": ""
+			},
+
+			/*Member Field				property		variable.other.property*/
+			/*Member Function			member			entity.name.function.member*/
+			/*Namespace				namespace		entity.name.namespace*/
+			/*New / Delete				newOperator		keyword.operator.new*/
+			/*Operator Overload Function 		operatorOverload	entity.name.function.operator*/
+			/*Operator Overload Member 		memberOperatorOverload	entity.name.function.operator.member*/
+			/*Parameter				parameter		variable.parameter*/
+			"parameter": {
+				"foreground": "#a95c68",
+				"fontStyle": "italic"
+			},
+			
+			/*Property (C++/CLI)			cliProperty		variable.other.property.cli*/
+			/*Reference Type (C++/CLI) 		referenceType		entity.name.type.class.reference*/
+			/*Static Member Field 			property.static 	variable.other.property.static*/
+			/*Static Member Function 		member.static		entity.name.function.member.static*/
+			/*Type 					type			entity.name.type*/
+			"type": {
+				"foreground": "#6a5acd",
+				"fontStyle": ""
+			},
+
+			/*User-Defined Literal - Number 	numberLiteral		entity.name.operator.custom-literal.number*/
+			/*User-Defined Literal - Raw		customLiteral		entity.name.operator.custom-literal*/
+			/*User-Defined Literal - String 	stringLiteral		entity.name.operator.custom-literal.string*/
+			/*Value Type (C++/CLI)			valueType		entity.name.type.class.value*/	
+		}
+	    },
+
+
+	"workbench.colorCustomizations": {
+
+	},
+	"explorer.confirmDelete": false
+}
