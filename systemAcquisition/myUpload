@@ -1,0 +1,5 @@
+#! /bin/bash
+
+cd .pio/build/genericSTM32F103C8/
+arm-none-eabi-objcopy -O binary *.elf FIRMWARE.bin
+/opt/stlink/stlink/st-flash write FIRMWARE.bin 0x8000000
