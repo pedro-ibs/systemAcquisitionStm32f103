@@ -1,5 +1,3 @@
-# system Acquisition Stm32f103
-
 ## Resumo
 Esse é um projeto com o objetivo de desenvolver um sistema de aquisição de dados utilizando o microcontrolador stm32f10, focando apenas no código embarcado no micro.
 
@@ -22,9 +20,9 @@ sudo apt install flatpak -y
 flatpak install --from https://dl.flathub.org/repo/appstream/com.visualstudio.code.flatpakref
 
 ```
-No VScode instale algumas extensões, principalmente a PlatformIO. use o arquivo [settings.json](./config/settings.json) para configurar o ambiente, é preciso mover este arquivo apos instalar todas as extensões.
+No VScode instale algumas extensões, principalmente a [PlatformIO](https://platformio.org/). use o arquivo [settings.json](./config/settings.json) para configurar o ambiente, é preciso mover este arquivo apos instalar todas as extensões.
 
-
+![extensões instaladas](config/extencaoes.png)
 
 ## Extensões visuais
 
