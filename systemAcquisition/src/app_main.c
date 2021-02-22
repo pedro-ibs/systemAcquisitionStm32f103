@@ -11,21 +11,48 @@
  * TODO: Licence
  * ########################################################
  *
- * TODO: documentation or resume or Abstract
+ * Use este aquivo para inicialisar os perifericos de hardware
+ * e todas as outras tasks da aplicação, veja FreeRTOSConfig.h
+ * para identifica as configurações do sistema operacional
+ * 
+ * em ./core/ estão os inicialisadores básicos do framework
+ * stm32cube
  *
  */
 
 
 
 /* Includes ------------------------------------------------------------------*/
-#include "includes.h"
-#include "sysHandler.h"
+#include <core/includes.h>
+#include <FreeRTOS/include/FreeRTOSConfig.h>
+#include <FreeRTOS/include/FreeRTOS.h>
+#include <FreeRTOS/include/task.h>
+#include <FreeRTOS/include/list.h>
+#include <FreeRTOS/include/queue.h>
+#include <FreeRTOS/include/portable.h>
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+TaskHandle_t TaskHandleMainApp = NULL;
+
 /* Private Functions ---------------------------------------------------------*/
-void SystemClock_Config(void);
-void MX_GPIO_Init(void);
+void vMain_app(void * pvParameters);
+void vMX_GPIO_Init(void);
+
+/**
+ * @brief Inicializar tasks da aplicação, essa função é execurada dendro da main.c no FreeRTOS 
+ * @param None
+ */
+extern void vStartupSystem(void) {
+	/* init main app tasks */
+	if(xTaskCreate( vMain_app, "app_main", configMINIMAL_STACK_SIZE*4, NULL, mainSET_PRIORITY, &TaskHandleMainApp) == pdFAIL){
+		NVIC_SystemReset();		// RESET MCU
+	} else {
+		/* init other tasks */
+
+	}	
+}
+
 
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
@@ -33,37 +60,24 @@ void MX_GPIO_Init(void);
 /*-------------------------------------------------------------------- Private Functions -----------------------------------------------------------------*/
 /*########################################################################################################################################################*/
 
-void SystemClock_Config(void) {
-	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-	/**
-	 * Initializes the RCC Oscillators according to the specified parameters
-	 * in the RCC_OscInitTypeDef structure.
-	 */
-	RCC_OscInitStruct.OscillatorType	= RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState		= RCC_HSE_ON;
-	RCC_OscInitStruct.HSEPredivValue	= RCC_HSE_PREDIV_DIV1;
-	RCC_OscInitStruct.HSIState		= RCC_HSI_ON;
-	RCC_OscInitStruct.PLL.PLLState		= RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource		= RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLMUL		= RCC_PLL_MUL9;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-		// Error_Handler();
+
+
+/**
+ * @brief Inicializar tasks da aplicação, essa função é execurada dendro da main.c no FreeRTOS 
+ * @param pvParameters, ponteiro do parametro passado na criação da task não nao utilizado nesta 
+ * função.
+ */
+void vMain_app(void * pvParameters){
+	(void) pvParameters;
+
+	vMX_GPIO_Init();
+
+	while (TRUE) {
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+		vTaskDelay(1000);
 	}
 
-	/**
-	 * Initializes the CPU, AHB and APB buses clocks
-	 */
-	RCC_ClkInitStruct.ClockType		= RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK														|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource		= RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider		= RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider	= RCC_HCLK_DIV2;
-	RCC_ClkInitStruct.APB2CLKDivider	= RCC_HCLK_DIV1;
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK){
-		// Error_Handler();
-	}
 }
-
 
 
 
@@ -72,7 +86,7 @@ void SystemClock_Config(void) {
  * @param None
  * @retval None
  */
-void MX_GPIO_Init(void){
+void vMX_GPIO_Init(void){
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
 	/* GPIO Ports Clock Enable */
@@ -90,37 +104,3 @@ void MX_GPIO_Init(void){
 	GPIO_InitStruct.Speed	= GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
-
-
-
-
-/**
- * 
- *  
- */
-int main(void){
-	HAL_Init();
-	HAL_IncTick();
-	HAL_GetTick();
-
-	SystemClock_Config();
-	MX_GPIO_Init();
-
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		// HAL_Delay(1000);
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-		// HAL_Delay(1000);
-
-
-	while (1) {
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		// HAL_Delay(1000);
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-		HAL_Delay(1000);
-	}
-	
-	return 0;
-}
-
-

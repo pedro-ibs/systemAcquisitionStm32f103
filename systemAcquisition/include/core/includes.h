@@ -11,15 +11,22 @@
  * opensource.org/licenses/BSD-3-Clause
  * ########################################################
  *
- * TODO: documentation or resume or Abstract
+ * inicialisadores básicos do framework stm32cube
  *
  */
 
 /* Includes ------------------------------------------------------------------*/
+
+/* Standard includes. */
+#include <string.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+/* stm standard includes.  */
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
 #include "sysHandler.h"
-
 
 #ifndef core_H_
 #define core_H_
