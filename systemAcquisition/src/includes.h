@@ -1,5 +1,5 @@
 /*
- * core.h
+ * includes.h
  *
  *  Created at:		22/02/2021 12:47:58
  *      Author:		Pedro Igor B. S.
@@ -8,7 +8,7 @@
  * 	tabSize:	8
  *
  * ########################################################
- * TODO: Licence
+ * opensource.org/licenses/BSD-3-Clause
  * ########################################################
  *
  * TODO: documentation or resume or Abstract
@@ -18,7 +18,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
-#include "stm32f103x6.h"
 #include "sysHandler.h"
 
 

@@ -1,5 +1,5 @@
 /*
- * alpcas.c
+ * main.c
  *
  *  Created at:		22/02/2021 11:54:32
  *      Author:		Pedro Igor B. S.
@@ -18,7 +18,8 @@
 
 
 /* Includes ------------------------------------------------------------------*/
-#include "sysCore/includes.h"
+#include "includes.h"
+#include "sysHandler.h"
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -47,7 +48,7 @@ void SystemClock_Config(void) {
 	RCC_OscInitStruct.PLL.PLLSource		= RCC_PLLSOURCE_HSE;
 	RCC_OscInitStruct.PLL.PLLMUL		= RCC_PLL_MUL9;
 	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-		Error_Handler();
+		// Error_Handler();
 	}
 
 	/**
@@ -59,7 +60,7 @@ void SystemClock_Config(void) {
 	RCC_ClkInitStruct.APB1CLKDivider	= RCC_HCLK_DIV2;
 	RCC_ClkInitStruct.APB2CLKDivider	= RCC_HCLK_DIV1;
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK){
-		Error_Handler();
+		// Error_Handler();
 	}
 }
 
@@ -99,14 +100,26 @@ void MX_GPIO_Init(void){
  */
 int main(void){
 	HAL_Init();
+	HAL_IncTick();
+	HAL_GetTick();
+
 	SystemClock_Config();
 	MX_GPIO_Init();
 
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+		// HAL_Delay(1000);
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+		// HAL_Delay(1000);
+
 
 	while (1) {
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+		// HAL_Delay(1000);
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+		HAL_Delay(1000);
 	}
 	
-
 	return 0;
 }
 
