@@ -147,7 +147,7 @@ void DebugMon_Handler(void) {
 // }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
+  * @brief  This function is executed in case of error occurrence. (is not an interruption)
   * @retval None
   */
 void Error_Handler(void) {

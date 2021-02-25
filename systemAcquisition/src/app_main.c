@@ -31,24 +31,26 @@
 #include <FreeRTOS/include/queue.h>
 #include <FreeRTOS/include/portable.h>
 
+#include <FreeRTOS/Drivers/gpio.h>
+#include <FreeRTOS/Drivers/uart.h>
+
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 TaskHandle_t TaskHandleMainApp = NULL;
 
 /* Private Functions ---------------------------------------------------------*/
 void vMain_app(void * pvParameters);
-void vMX_GPIO_Init(void);
 
 /**
  * @brief Inicializar tasks da aplicação, essa função é execurada dendro da main.c no FreeRTOS 
  * @param None
  */
 extern void vStartupSystem(void) {
-	/* init main app tasks */
+	/* iniciar task principal */
 	if(xTaskCreate( vMain_app, "app_main", configMINIMAL_STACK_SIZE*4, NULL, mainSET_PRIORITY, &TaskHandleMainApp) == pdFAIL){
 		NVIC_SystemReset();		// RESET MCU
 	} else {
-		/* init other tasks */
+		/* iniciar putras tasks */
 
 	}	
 }
@@ -70,37 +72,15 @@ extern void vStartupSystem(void) {
 void vMain_app(void * pvParameters){
 	(void) pvParameters;
 
-	vMX_GPIO_Init();
+	gpio_vInitAll();
+	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
+	usart_vSetup(ttyUSART1, 9600);
+
 
 	while (TRUE) {
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		vTaskDelay(1000);
+		gpio_vToggle(GPIOC13);
+		vTaskDelay(_1S);
+		usart_vSendStrLn(ttyUSART1, "alpacas", strlen("alpacas"));
 	}
 
-}
-
-
-
-/**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
-void vMX_GPIO_Init(void){
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOD_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-
-	/*Configure GPIO pin : PC13 */
-	GPIO_InitStruct.Pin	= GPIO_PIN_13;
-	GPIO_InitStruct.Mode	= GPIO_MODE_OUTPUT_OD;
-	GPIO_InitStruct.Pull	= GPIO_NOPULL;
-	GPIO_InitStruct.Speed	= GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }

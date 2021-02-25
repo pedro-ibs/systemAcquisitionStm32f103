@@ -42,6 +42,8 @@
 #include <FreeRTOS/include/list.h>
 #include <FreeRTOS/include/queue.h>
 #include <FreeRTOS/include/portable.h>
+#include <FreeRTOS/Drivers/gpio.h>
+#include <FreeRTOS/Drivers/uart.h>
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -49,6 +51,7 @@
 static void svSetup( void );
 void vStartupSystem(void);
 void vSystemClock_Config(void);
+void vInitUsart1( void );
 
 int main( void ) {
 	#ifdef DEBUG
@@ -99,8 +102,8 @@ int main( void ) {
 
 void vApplicationIdleHook(void){
 	// TODO: Put the processor into a low power state.
-	// const char msg[] = "\r\nvApplicationIdleHookz";
-	// usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
+	const char msg[] = "\r\nvApplicationIdleHookz";
+	usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
 
 }
 
@@ -132,12 +135,11 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName){
 	/* This function will get called if a task overflows its stack.   If the
 	parameters are corrupt then inspect pxCurrentTCB to find which was the
 	offending task. */
-	// TODO: refactore 
-	// vTaskSuspendAll();
-	// const char msg[] = "\r\nStack Overflow in task: ";
-	// usart_vAtomicSendStr(ttyUSART1, msg, strlen(msg));
-	// usart_vAtomicSendStrLn(ttyUSART1, (char*)pcTaskName, strlen((char*)pcTaskName));
-	// xTaskResumeAll();
+	vTaskSuspendAll();
+	const char msg[] = "\r\nStack Overflow in task: ";
+	usart_vAtomicSendStr(ttyUSART1, msg, strlen(msg));
+	usart_vAtomicSendStrLn(ttyUSART1, (char*)pcTaskName, strlen((char*)pcTaskName));
+	xTaskResumeAll();
 
 	( void ) xTask;
 
@@ -167,10 +169,8 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName){
 
 void vApplicationTickHook(void){
 	// TODO: It is a place to add timer processing.
-
-	// TODO: refactore 
-	// const char msg[] = "\r\nvApplicationTickHook";
-	// usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
+	const char msg[] = "\r\nvApplicationTickHook";
+	usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
 }
 
 /*==================================================================================================
@@ -195,16 +195,15 @@ void vApplicationTickHook(void){
 void vApplicationMallocFailedHook(void){
 	// It is a place to add processing for error on allocating memory.
 
-	// TODO: refactore 
-	// static char msg[15];
-	// const char msg2[] = "\r\nfailure to allocate dynamic memory\r\n memory in use: ";
+	static char msg[15];
+	const char msg2[] = "\r\nfailure to allocate dynamic memory\r\n memory in use: ";
 
-	// for(u8 idx=0; idx<10; idx++) msg[idx] = 0x00;
+	for(u8 idx=0; idx<10; idx++) msg[idx] = 0x00;
 
 
-	// usart_vAtomicSendStr(ttyUSART1, msg2, strlen(msg2));
-	// itoa(xPortGetFreeHeapSize() , msg, 10);
-	// usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
+	usart_vAtomicSendStr(ttyUSART1, msg2, strlen(msg2));
+	itoa(xPortGetFreeHeapSize() , msg, 10);
+	usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
 }
 
 
@@ -253,4 +252,3 @@ void vSystemClock_Config(void) {
 		// Error_Handler();
 	}
 }
-

@@ -11,7 +11,7 @@
  * opensource.org/licenses/BSD-3-Clause
  * ########################################################
  *
- * inicialisadores básicos do framework stm32cube
+ * inicialisadores básicos do framework stm32cubeMX
  *
  */
 
@@ -24,8 +24,8 @@
 #include <stdlib.h>
 
 /* stm standard includes.  */
-#include "stm32f1xx_hal.h"
-#include "stm32f1xx.h"
+#include <stm32f1xx_hal.h>
+#include <stm32f1xx.h>
 #include "sysHandler.h"
 
 #ifndef core_H_
