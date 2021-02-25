@@ -11,8 +11,16 @@
  * TODO: Licence
  * ########################################################
  *
- * TODO: documentation or resume or Abstract
- *
+ * driver serial para a comunicação serial RS232, esse driver
+ * faz uso das interrupções USART_IT_TXE e USART_IT_RXNE para
+ * transmitir e ressaber dados. Alem disso há recursos de queue
+ * (para transmitir) e mutex para auxiliar no uso do driver
+ * 
+ * é possível  desativar a interrupção USART_IT_RXNE e transmitir
+ * sem o uso da interrupção USART_IT_TXE.
+ * 
+ * para mais detalhes veja as descrições das funções 
+ * 
  */
 
 
@@ -38,37 +46,39 @@
 typedef struct {
 	USART_TypeDef		*xUSART;
 	UART_HandleTypeDef	xHandle;
-	QueueHandle_t		xRXD;
-	QueueHandle_t		xTXD;
 	IRQn_Type		xIRQ;
+	SemaphoreHandle_t	xSemaphore;
+	QueueHandle_t		xTXD;
+	char 			pcRXD[SIZE_BUFFER_RXD];	
+	size_t			uSizeBuffer;
 } xUsartHandleData;
 
 
 static xUsartHandleData xUsart[ttyNUM] = {
-	{USART1, {0}, NULL, NULL, USART1_IRQn},
-	{USART2, {0}, NULL, NULL, USART2_IRQn},
-	{USART3, {0}, NULL, NULL, USART3_IRQn}
+	{USART1, {0}, USART1_IRQn, NULL, NULL, "", 0},
+	{USART2, {0}, USART2_IRQn, NULL, NULL, "", 0},
+	{USART3, {0}, USART3_IRQn, NULL, NULL, "", 0}
 };
 
 
 /* Private Functions ---------------------------------------------------------*/
 _bool usart_bCheckError(const xTTY xtty);
 void usart_vSetupGPIO(const xTTY xtty);
-void usart_vInitQueue(const xTTY xtty);
+void usart_vInitVars(const xTTY xtty);
 void usart_vInitIT(const xTTY xtty);
 void usart_vIT(const xTTY xtty,BaseType_t *const pxHigherPriorityTaskWoken);
 
 
 /**
- * @brief inicia a uart e variaveis use gpio_vInitAll() antes
+ * @brief inicia a uart e variaveis use gpio_vInitAll() antes.
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada
- * @param cuBaudRate, velocidade da porta serial
-*/
+ * @param cuBaudRate, velocidade da porta serial.
+ */
 void usart_vSetup(xTTY xtty, cu32 cuBaudRate){	
 	if(xtty >= ttyNUM) return;
 
-	usart_vInitQueue(xtty);
+	usart_vInitVars(xtty);
 	usart_vSetupGPIO(xtty);
 
 	xUsart[xtty].xHandle.Instance		= xUsart[xtty].xUSART;
@@ -89,6 +99,94 @@ void usart_vSetup(xTTY xtty, cu32 cuBaudRate){
 	if (HAL_UART_Init(&xUsart[xtty].xHandle) != HAL_OK) {
 		Error_Handler();
 	}
+}
+
+
+/**
+ * @brief pega o acesso ao periferio.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada.
+ */
+void usart_vTakeAccess(const xTTY xtty){
+	if(usart_bCheckError(xtty)) return;
+	xSemaphoreTake( xUsart[xtty].xSemaphore, portMAX_DELAY );
+}
+
+
+/**
+ * @brief devolve o acesso ao periferio.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada.
+ */
+void usart_vGiveAccess(const xTTY xtty){
+	if(usart_bCheckError(xtty)) return;
+	xSemaphoreGive(xUsart[xtty].xSemaphore);
+}
+
+
+/**
+ * @brief desativa a interrupção por recebimento de dados
+ * USART_IT_RXNE
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada.
+ */
+void usart_vStopIT_RXD(const xTTY xtty){
+	if(usart_bCheckError(xtty)) return;
+	__HAL_USART_DISABLE_IT(&xUsart[xtty].xHandle, USART_IT_RXNE);
+}
+
+ 
+/**
+ * @brief reativa a interrupção por recebimento de dados
+ * USART_IT_RXNE
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada.
+ */
+void usart_vStartIT_RXD(const xTTY xtty){
+	if(usart_bCheckError(xtty)) return;
+	__HAL_USART_ENABLE_IT(&xUsart[xtty].xHandle, USART_IT_RXNE);	
+}
+
+
+/**
+ * @brief calcula o tamanho ocupado do buffer RXD.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3
+ * @return Caso xtty não seja um valor valudo o  valor
+ * returnado será -1, do contrario o valor returnado
+ * será o tamanho ocupado do buffer RXD .
+ */
+int usart_iSizeBuffer(const xTTY xtty){
+	if(usart_bCheckError(xtty)) return -1;
+	return xUsart[xtty].uSizeBuffer;
+}
+
+
+/**
+ * @brief apaga os dados armazenados no buffer.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada.
+ */
+void usart_vCleanBuffer(const xTTY xtty){
+	if(usart_bCheckError(xtty)) return;
+	usart_vStopIT_RXD(xtty);
+	for(size_t uIdx=0; uIdx<SIZE_BUFFER_RXD; uIdx++){
+		xUsart[xtty].pcRXD[uIdx] = 0x00U;
+	}
+	xUsart[xtty].uSizeBuffer = 0x00U;
+	usart_vStartIT_RXD(xtty);
+}
+
+
+/**
+ * @brief pegar o buffer RXD da usart.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada.
+ * @return CCHR: retorna o ponteiro do tipo CCHR (const char *)
+ * do buffer pcRXD. caso xtty seja invalido será retornado NULL
+ */
+CCHR *usart_pcGetBuffer(xTTY xtty){
+	if(usart_bCheckError(xtty)) return NULL;
+	return (CCHR*)xUsart[xtty].pcRXD;
 }
 
 
@@ -213,10 +311,10 @@ void usart_vSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
  * @return FALSE: variavel inicialisadas
  */
 _bool usart_bCheckError(const xTTY xtty){
-	if(xtty >= ttyNUM)		return	TRUE;
-	if(xUsart[xtty].xRXD == NULL)	return	TRUE;
-	if(xUsart[xtty].xTXD == NULL)	return	TRUE;
-	return 					FALSE;
+	if(xtty >= ttyNUM)			return	TRUE;
+	if(xUsart[xtty].pcRXD == NULL)		return	TRUE;
+	if(xUsart[xtty].xSemaphore == NULL)	return	TRUE;
+	return 						FALSE;
 }
 
 
@@ -295,14 +393,19 @@ void usart_vSetupGPIO(const xTTY xtty){
  * @brief inicialisa as queue para cada USART
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3
  */
-void usart_vInitQueue(const xTTY xtty){
-	if(xUsart[xtty].xRXD == NULL){
-		xUsart[xtty].xRXD = xQueueCreate(SIZE_BUFFER_RXD, sizeof(char));
+void usart_vInitVars(const xTTY xtty){
+	if(xUsart[xtty].xSemaphore == NULL){
+		xUsart[xtty].xSemaphore = xSemaphoreCreateMutex();
 	}
 
 	if(xUsart[xtty].xTXD == NULL){
 		xUsart[xtty].xTXD = xQueueCreate(SIZE_BUFFER_TXD, sizeof(char));
 	}
+
+	for(size_t uIdx=0; uIdx<SIZE_BUFFER_RXD; uIdx++){
+		xUsart[xtty].pcRXD[uIdx] = 0x00U;
+	}
+	xUsart[xtty].uSizeBuffer = 0x00U;
 }
 
 
@@ -327,14 +430,16 @@ void usart_vInitIT(const xTTY xtty){
  * de troca de contexto em interruições. 
  */
 void usart_vIT(const xTTY xtty,BaseType_t *const pxHigherPriorityTaskWoken){
-	u8 uBuffer[1] = {0x00};
+	u8 uBuffer[1] = {0x00U};
 
 	// interrupção por recebimento de um framer 
 	if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE) == SET){
 		__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE);
 		HAL_UART_Receive(&xUsart[xtty].xHandle, uBuffer, 1, UART_TRANSMIT_TIMEOUT);
-		xQueueSendFromISR(xUsart[xtty].xRXD, uBuffer, pxHigherPriorityTaskWoken);
-
+		
+		if(xUsart[xtty].uSizeBuffer < SIZE_BUFFER_RXD){
+			xUsart[xtty].pcRXD[xUsart[xtty].uSizeBuffer++] = uBuffer[0];
+		}
 	// interrupção por envio de um framer 
 	} else if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE) == SET ){
 		__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE);

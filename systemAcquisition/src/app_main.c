@@ -76,7 +76,6 @@ void vMain_app(void * pvParameters){
 	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
 	usart_vSetup(ttyUSART1, 9600);
 
-
 	while (TRUE) {
 		gpio_vToggle(GPIOC13);
 		vTaskDelay(_1S);
