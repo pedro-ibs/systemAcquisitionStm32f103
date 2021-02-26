@@ -330,6 +330,7 @@ void usart_vSetupGPIO(const xTTY xtty){
 			 * habilitando uart1 e trocando so pinos 
 			 * padroes para PB6 e PB 7
 			 */			
+			__HAL_RCC_GPIOB_CLK_ENABLE();
 			__HAL_RCC_AFIO_CLK_ENABLE();
 			__HAL_RCC_USART1_CLK_ENABLE();
 			__HAL_AFIO_REMAP_I2C1_DISABLE();
@@ -350,6 +351,7 @@ void usart_vSetupGPIO(const xTTY xtty){
 			break;
 		
 		case ttyUSART2:
+			__HAL_RCC_GPIOA_CLK_ENABLE();
 			__HAL_RCC_USART2_CLK_ENABLE();
 			
 			// PA2 USART1_TX
@@ -368,6 +370,7 @@ void usart_vSetupGPIO(const xTTY xtty){
 
 		case ttyUSART3:
 		default:
+			__HAL_RCC_GPIOB_CLK_ENABLE();
 			__HAL_RCC_USART3_CLK_ENABLE();
 
 			// PB10 USART1_TX

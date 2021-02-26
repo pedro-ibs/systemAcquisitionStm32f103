@@ -35,11 +35,56 @@
 typedef struct{
 	GPIO_TypeDef *pxGPIOx;		// GPIO PORT
 	u32 uPINx;			// GPIO PIN
-}GpioPin;
+}xGpioPin;
+
+
+static const xGpioPin xGpio[GPIO_NUM] = {
+	{GPIOA,   GPIO_PIN_0},	
+	{GPIOA,   GPIO_PIN_1},	
+	{GPIOA,   GPIO_PIN_2},	
+	{GPIOA,   GPIO_PIN_3},	
+	{GPIOA,   GPIO_PIN_4},	
+	{GPIOA,   GPIO_PIN_5},	
+	{GPIOA,   GPIO_PIN_6},	
+	{GPIOA,   GPIO_PIN_7},	
+	{GPIOA,   GPIO_PIN_8},	
+	{GPIOA,   GPIO_PIN_9},	
+	{GPIOA,   GPIO_PIN_10},
+	{GPIOA,   GPIO_PIN_11},	
+	{GPIOA,   GPIO_PIN_12},	
+	{GPIOA,   GPIO_PIN_13},	
+	{GPIOA,   GPIO_PIN_14},	
+	{GPIOA,   GPIO_PIN_15},
+
+	{GPIOB,   GPIO_PIN_0},
+	{GPIOB,   GPIO_PIN_1},
+	{GPIOB,   GPIO_PIN_2},
+	{GPIOB,   GPIO_PIN_3},
+	{GPIOB,   GPIO_PIN_4},
+	{GPIOB,   GPIO_PIN_5},
+	{GPIOB,   GPIO_PIN_6},
+	{GPIOB,   GPIO_PIN_7},
+	{GPIOB,   GPIO_PIN_8},
+	{GPIOB,   GPIO_PIN_9},
+	{GPIOB,   GPIO_PIN_10},
+	{GPIOB,   GPIO_PIN_11},
+	{GPIOB,   GPIO_PIN_12},
+	{GPIOB,   GPIO_PIN_13},
+	{GPIOB,   GPIO_PIN_14},
+	{GPIOB,   GPIO_PIN_15},
+
+	{GPIOC,   GPIO_PIN_13},
+	{GPIOC,   GPIO_PIN_14},
+	{GPIOC,   GPIO_PIN_15},
+	
+	{GPIOD,   GPIO_PIN_0},
+	{GPIOD,   GPIO_PIN_1},
+
+};
+
 
 
 /* Private Functions ---------------------------------------------------------*/
-GpioPin gpio_xTranslator(cu8 cuGPIOxx);	
 
 /**
  * @brief habilitar clock das portas GPIO
@@ -73,7 +118,7 @@ void gpio_vDisableDebug (void) {
 
 /**
  * @brief configura o momo de operação do pino GPIO
- * @param cuGPIOxx, pino a ser configurado
+ * @param cxGPIOxx, pino a ser configurado
  * @param cuMode, modo de operação:
  *	GPIO_MODE_INPUT		Entrada alta impedância ( flutuasão ) 
  *	GPIO_MODE_OUTPUT_PP	Saida "Push Pull";
@@ -86,30 +131,28 @@ void gpio_vDisableDebug (void) {
  *	GPIO_PULLUP  		"Pull-up"	ativado;             
  *	GPIO_PULLDOWN		"Pull-down" 	ativado ;               
  */
-void gpio_vMode (cu32 cuGPIOxx, cu32 cuMode, cu32 cuPull) {
-	GpioPin xGpio = gpio_xTranslator(cuGPIOxx);
+void gpio_vMode (const xGpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull) {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	
-	HAL_GPIO_WritePin(xGpio.pxGPIOx, xGpio.uPINx, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx, GPIO_PIN_RESET);
 	
-	GPIO_InitStruct.Pin	= xGpio.uPINx;
+	GPIO_InitStruct.Pin	= xGpio[cxGPIOxx].uPINx;
 	GPIO_InitStruct.Mode	= cuMode;
 	GPIO_InitStruct.Pull	= cuPull;
 	GPIO_InitStruct.Speed	= GPIO_SPEED_FREQ_LOW;
 	
-	HAL_GPIO_Init(xGpio.pxGPIOx, &GPIO_InitStruct);
+	HAL_GPIO_Init(xGpio[cxGPIOxx].pxGPIOx, &GPIO_InitStruct);
 }
 
 /**
  * @brief lê o estado de um pino
- * @param cuGPIOxx pino a ser lido
+ * @param cxGPIOxx pino a ser lido
  * @return FALSE:	estado 0/LOW/GPIO_PIN_RESET
  * @return TRUE:	estado 1/HIGH/GPIO_PIN_SET
  * 
  */
-_bool gpio_bRead(cu32 cuGPIOxx) {
-	GpioPin xGpio = gpio_xTranslator(cuGPIOxx);
-	if(HAL_GPIO_ReadPin(xGpio.pxGPIOx, xGpio.uPINx) == GPIO_PIN_RESET) return FALSE;
+_bool gpio_bRead(const xGpioLabel cxGPIOxx) {
+	if(HAL_GPIO_ReadPin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx) == GPIO_PIN_RESET) return FALSE;
 	return TRUE;
 }
 
@@ -118,18 +161,16 @@ _bool gpio_bRead(cu32 cuGPIOxx) {
  * @param bValue TRUE:	para estado 1/HIGH/GPIO_PIN_SET
  * @param bValue FALSE:	para estado 0/LOW/GPIO_PIN_RESET
  */
-void gpio_vWrite(cu32 cuGPIOxx, _bool bValue) {
-	GpioPin xGpio = gpio_xTranslator(cuGPIOxx);
-	HAL_GPIO_WritePin(xGpio.pxGPIOx, xGpio.uPINx, (bValue)?(GPIO_PIN_SET):(GPIO_PIN_RESET));
+void gpio_vWrite(const xGpioLabel cxGPIOxx, _bool bValue) {
+	HAL_GPIO_WritePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx, (bValue)?(GPIO_PIN_SET):(GPIO_PIN_RESET));
 }
 
 /**
  * @brief troca o estado do pino
- * @param cuGPIOxx, pino que trocará de estado
+ * @param cxGPIOxx, pino que trocará de estado
  */
-void gpio_vToggle(cu32 cuGPIOxx) {
-	GpioPin xGpio = gpio_xTranslator(cuGPIOxx);
-	HAL_GPIO_TogglePin(xGpio.pxGPIOx, xGpio.uPINx);
+void gpio_vToggle(const xGpioLabel cxGPIOxx) {
+	HAL_GPIO_TogglePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx);
 }
 
 /*########################################################################################################################################################*/
@@ -137,58 +178,3 @@ void gpio_vToggle(cu32 cuGPIOxx) {
 /*########################################################################################################################################################*/
 /*-------------------------------------------------------------------- Private Functions -----------------------------------------------------------------*/
 /*########################################################################################################################################################*/
-
-/**
- * @brief traduz a macro GPIOAx, GPIOBx, GPIOCx, GPIODx para porta e pino.
- * essa função é usada para facilitar o uso dos GPIOs na inicialisação, leitura
- * e escrita.
- * @param cuGPIOxx, pino a ser traduzido em porta e pino
- * @return GpioPin, tipo que armasena a poeta e o pino.
- */
-GpioPin gpio_xTranslator(cu8 cuGPIOxx) {
-	GpioPin		xGpio;								// TRANSLATOR HARDWARE PIN TO GPIO
-	switch(cuGPIOxx){
-		//=========================== A ============================//
-		case 10: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_3;	break;
-		case 11: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_1;	break;
-		case 12: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_2;	break;
-		case 13: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_3;	break;
-		case 14: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_4; 	break;
-		case 15: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_5; 	break;
-		case 16: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_6; 	break;
-		case 17: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_7; 	break;
-		case 29: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_8; 	break;
-		case 30: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_9; 	break;
-		case 31: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_10;	break;
-		case 32: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_11;	break;
-		case 33: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_12;	break;
-		case 34: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_13;	break;
-		case 37: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_14;	break;
-		case 38: xGpio.pxGPIOx = GPIOA; xGpio.uPINx = GPIO_PIN_15;	break;
-		//=========================== B ============================//
-		case 18: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_0;	break;
-		case 19: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_1;	break;
-		case 20: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_2;	break;
-		case 21: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_10;	break;
-		case 22: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_11;	break;
-		case 25: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_12;	break;
-		case 26: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_13;	break;
-		case 27: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_14;	break;
-		case 28: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_15;	break;
-		case 39: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_3;	break;
-		case 40: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_4;	break;
-		case 41: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_5;	break;
-		case 42: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_6;	break;
-		case 43: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_7;	break;
-		case 45: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_8;	break;
-		case 46: xGpio.pxGPIOx = GPIOB; xGpio.uPINx = GPIO_PIN_9;	break;
-		//=========================== C ============================//
-		case 2: xGpio.pxGPIOx  = GPIOC; xGpio.uPINx = GPIO_PIN_13;	break;
-		case 3: xGpio.pxGPIOx  = GPIOC; xGpio.uPINx = GPIO_PIN_14;	break;
-		case 4: xGpio.pxGPIOx  = GPIOC; xGpio.uPINx = GPIO_PIN_15;	break;
-		//=========================== D ============================//
-		case 5: xGpio.pxGPIOx  = GPIOD; xGpio.uPINx = GPIO_PIN_0;	break;
-		case 6: xGpio.pxGPIOx  = GPIOD; xGpio.uPINx = GPIO_PIN_1;	break;
-	}
-	return xGpio;
-}
