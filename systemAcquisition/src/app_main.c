@@ -76,10 +76,16 @@ void vMain_app(void * pvParameters){
 	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
 	usart_vSetup(ttyUSART1, 9600);
 
+	CCHR *pcUsart = usart_pcGetBuffer(ttyUSART1);
+
 	while (TRUE) {
 		gpio_vToggle(GPIOC13);
-		vTaskDelay(_1S);
-		usart_vSendStrLn(ttyUSART1, "alpacas", strlen("alpacas"));
-	}
+		vTaskDelay(_80MS);
+		// usart_vSendStrLn(ttyUSART1, "pcUsart", strlen("pcUsart"));
 
+		if(strstr(pcUsart, "\r\n")){
+			usart_vSendStr(ttyUSART1, pcUsart, strlen(pcUsart));
+			usart_vCleanBuffer(ttyUSART1);
+		}
+	}
 }

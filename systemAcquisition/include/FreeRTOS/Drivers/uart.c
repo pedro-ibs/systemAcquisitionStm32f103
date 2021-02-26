@@ -430,21 +430,28 @@ void usart_vInitIT(const xTTY xtty){
  * de troca de contexto em interruições. 
  */
 void usart_vIT(const xTTY xtty,BaseType_t *const pxHigherPriorityTaskWoken){
-	u8 uBuffer[1] = {0x00U};
+	u8 uBuffer = 0x00U;
 
-	// interrupção por recebimento de um framer 
-	if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE) == SET){
-		__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE);
-		HAL_UART_Receive(&xUsart[xtty].xHandle, uBuffer, 1, UART_TRANSMIT_TIMEOUT);
-		
-		if(xUsart[xtty].uSizeBuffer < SIZE_BUFFER_RXD){
-			xUsart[xtty].pcRXD[xUsart[xtty].uSizeBuffer++] = uBuffer[0];
+		// interrupção por recebimento de um framer 
+		if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE) == SET){
+			__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE);
+
+		if ( (xUsart[xtty].xHandle.Init.WordLength == UART_WORDLENGTH_9B) || ((xUsart[xtty].xHandle.Init.WordLength == UART_WORDLENGTH_8B) && (xUsart[xtty].xHandle.Init.Parity == UART_PARITY_NONE))) {
+			uBuffer = ( xUsart[xtty].xHandle.Instance->DR & 0x00FF);
+		} else {
+			uBuffer = ( xUsart[xtty].xHandle.Instance->DR & 0x007F);
 		}
+
+		if(xUsart[xtty].uSizeBuffer < SIZE_BUFFER_RXD){
+			xUsart[xtty].pcRXD[xUsart[xtty].uSizeBuffer++] = uBuffer;
+		}
+	}
+
 	// interrupção por envio de um framer 
-	} else if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE) == SET ){
+	if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE) == SET ){
 		__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE);
-		if(xQueueReceiveFromISR(xUsart[xtty].xTXD, uBuffer, pxHigherPriorityTaskWoken) == pdPASS ){
-			HAL_UART_Transmit(&xUsart[xtty].xHandle, uBuffer, 1, UART_TRANSMIT_TIMEOUT);
+		if(xQueueReceiveFromISR(xUsart[xtty].xTXD, &uBuffer, pxHigherPriorityTaskWoken) == pdPASS ){
+			xUsart[xtty].xHandle.Instance->DR = (uBuffer & 0xFFU);
 		} else {
 			// quando a queue estiver vazei a interrupção não deve ser chamada novamente
 			// amentos que a queue seja populada novamente
