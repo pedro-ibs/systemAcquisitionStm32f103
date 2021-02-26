@@ -168,12 +168,10 @@ int usart_iSizeBuffer(const xTTY xtty){
  */
 void usart_vCleanBuffer(const xTTY xtty){
 	if(usart_bCheckError(xtty)) return;
-	usart_vStopIT_RXD(xtty);
 	for(size_t uIdx=0; uIdx<SIZE_BUFFER_RXD; uIdx++){
 		xUsart[xtty].pcRXD[uIdx] = 0x00U;
 	}
 	xUsart[xtty].uSizeBuffer = 0x00U;
-	usart_vStartIT_RXD(xtty);
 }
 
 
@@ -445,10 +443,8 @@ void usart_vIT(const xTTY xtty,BaseType_t *const pxHigherPriorityTaskWoken){
 		if(xUsart[xtty].uSizeBuffer < SIZE_BUFFER_RXD){
 			xUsart[xtty].pcRXD[xUsart[xtty].uSizeBuffer++] = uBuffer;
 		}
-	}
-
-	// interrupção por envio de um framer 
-	if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE) == SET ){
+		// interrupção por envio de um framer 
+	} else if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE) == SET ){
 		__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE);
 		if(xQueueReceiveFromISR(xUsart[xtty].xTXD, &uBuffer, pxHigherPriorityTaskWoken) == pdPASS ){
 			xUsart[xtty].xHandle.Instance->DR = (uBuffer & 0xFFU);
