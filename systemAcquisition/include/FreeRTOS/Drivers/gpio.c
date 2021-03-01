@@ -118,6 +118,7 @@ void gpio_vDisableDebug (void) {
 
 /**
  * @brief configura o momo de operação do pino GPIO
+ * @note configuraçõe fixas: GPIO_SPEED_FREQ_LOW
  * @param cxGPIOxx, pino a ser configurado
  * @param cuMode, modo de operação:
  *	GPIO_MODE_INPUT		Entrada alta impedância ( flutuasão ) 
@@ -132,17 +133,40 @@ void gpio_vDisableDebug (void) {
  *	GPIO_PULLDOWN		"Pull-down" 	ativado ;               
  */
 void gpio_vMode (const xGpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull) {
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	
 	HAL_GPIO_WritePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx, GPIO_PIN_RESET);
 	
-	GPIO_InitStruct.Pin	= xGpio[cxGPIOxx].uPINx;
-	GPIO_InitStruct.Mode	= cuMode;
-	GPIO_InitStruct.Pull	= cuPull;
-	GPIO_InitStruct.Speed	= GPIO_SPEED_FREQ_LOW;
+	GPIO_InitTypeDef GPIO_InitStruct 	= {0};
+	
+	GPIO_InitStruct.Pin			= xGpio[cxGPIOxx].uPINx;
+	GPIO_InitStruct.Mode			= cuMode;
+	GPIO_InitStruct.Pull			= cuPull;
+	GPIO_InitStruct.Speed			= GPIO_SPEED_FREQ_LOW;
 	
 	HAL_GPIO_Init(xGpio[cxGPIOxx].pxGPIOx, &GPIO_InitStruct);
 }
+
+
+/**
+ * @brief configura o momo de operação do pino GPIO
+ * @note configuraçõe fixas: GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH
+ * @param cxGPIOxx, pino a ser configurado
+ */
+void gpio_vAnalogMode (const xGpioLabel cxGPIOxx) {
+	
+	HAL_GPIO_WritePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx, GPIO_PIN_RESET);
+	
+	GPIO_InitTypeDef GPIO_InitStruct	= {0};
+
+	GPIO_InitStruct.Pin			= xGpio[cxGPIOxx].uPINx;
+	GPIO_InitStruct.Mode			= GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull			= GPIO_NOPULL;
+	GPIO_InitStruct.Speed			= GPIO_SPEED_FREQ_HIGH;
+	
+	HAL_GPIO_Init(xGpio[cxGPIOxx].pxGPIOx, &GPIO_InitStruct);
+}
+
+
 
 /**
  * @brief lê o estado de um pino
@@ -152,7 +176,9 @@ void gpio_vMode (const xGpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull) {
  * 
  */
 _bool gpio_bRead(const xGpioLabel cxGPIOxx) {
-	if(HAL_GPIO_ReadPin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx) == GPIO_PIN_RESET) return FALSE;
+	if(HAL_GPIO_ReadPin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx) == GPIO_PIN_RESET) {
+		return FALSE;
+	}
 	return TRUE;
 }
 

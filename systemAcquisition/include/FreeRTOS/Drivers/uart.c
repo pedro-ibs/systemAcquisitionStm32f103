@@ -430,12 +430,12 @@ void usart_vInitIT(const xTTY xtty){
  * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS para o controle
  * de troca de contexto em interruições. 
  */
-void usart_vIT(const xTTY xtty,BaseType_t *const pxHigherPriorityTaskWoken){
+void usart_vIT(const xTTY xtty, BaseType_t *const pxHigherPriorityTaskWoken){
 	u8 uBuffer = 0x00U;
 
-		// interrupção por recebimento de um framer 
-		if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE) == SET){
-			__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE);
+	// interrupção por recebimento de um framer 
+	if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE) == SET){
+		__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_RXNE);
 
 		if ( (xUsart[xtty].xHandle.Init.WordLength == UART_WORDLENGTH_9B) || ((xUsart[xtty].xHandle.Init.WordLength == UART_WORDLENGTH_8B) && (xUsart[xtty].xHandle.Init.Parity == UART_PARITY_NONE))) {
 			uBuffer = ( xUsart[xtty].xHandle.Instance->DR & 0x00FF);
@@ -446,7 +446,9 @@ void usart_vIT(const xTTY xtty,BaseType_t *const pxHigherPriorityTaskWoken){
 		if(xUsart[xtty].uSizeBuffer < SIZE_BUFFER_RXD){
 			xUsart[xtty].pcRXD[xUsart[xtty].uSizeBuffer++] = uBuffer;
 		}
-		// interrupção por envio de um framer 
+
+
+	// interrupção por envio de um framer 
 	} else if(__HAL_UART_GET_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE) == SET ){
 		__HAL_USART_CLEAR_FLAG(&xUsart[xtty].xHandle, USART_FLAG_TXE);
 		if(xQueueReceiveFromISR(xUsart[xtty].xTXD, &uBuffer, pxHigherPriorityTaskWoken) == pdPASS ){

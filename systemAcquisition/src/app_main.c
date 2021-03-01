@@ -21,7 +21,6 @@
  */
 
 
-
 /* Includes ------------------------------------------------------------------*/
 #include <core/includes.h>
 #include <FreeRTOS/include/FreeRTOSConfig.h>
@@ -33,6 +32,7 @@
 
 #include <FreeRTOS/Drivers/gpio.h>
 #include <FreeRTOS/Drivers/uart.h>
+#include <FreeRTOS/Drivers/adc.h>
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -76,7 +76,11 @@ void vMain_app(void * pvParameters){
 	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
 	usart_vSetup(ttyUSART1, 9600);
 
+	adc1_vInitGetSample();
+
 	CCHR *pcUsart = usart_pcGetBuffer(ttyUSART1);
+
+	usart_vAtomicSendChr(ttyUSART1, 'A');
 
 	while (TRUE) {
 		gpio_vToggle(GPIOC13);
@@ -88,4 +92,21 @@ void vMain_app(void * pvParameters){
 			usart_vCleanBuffer(ttyUSART1);
 		}
 	}
+}
+
+
+
+
+void acd1_vBufferDone(BaseType_t *const pxHigherPriorityTaskWoken){
+	(void) pxHigherPriorityTaskWoken;
+}
+
+
+void adc1_vDMA_IRQHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
+	(void) pxHigherPriorityTaskWoken;
+}
+
+
+void adc1_vTIM3_IRQHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
+	(void) pxHigherPriorityTaskWoken;
 }
