@@ -19,13 +19,12 @@
 #include <core/includes.h>
 #include <FreeRTOS/Drivers/gpio.h>
 
-
 #ifndef adc_H_
 #define adc_H_
 
 /* macro ---------------------------------------------------------------------*/
 
-#define ADC1_CHANNEL_DISABLE		( (u32) 0x00000000U )
+#define ADC1_CHANNEL_DISABLE ((u32)0x00000000U)
 
 /**
  * utilise essas macros para configurar os RANK de cada canal do adc1. 
@@ -48,16 +47,16 @@
  * CONFIGURE A "ADC1_SIZE_BUFFER" COM UM NUMERO MULTIPLO DA QUANTIDADE
  * DE CANAIS USADOS POIS.
  */
-#define ADC1_PA0_RANK		(ADC_REGULAR_RANK_1)
-#define ADC1_PA1_RANK		(ADC_REGULAR_RANK_2)
-#define ADC1_PA2_RANK		(ADC_REGULAR_RANK_3)
-#define ADC1_PA3_RANK		(ADC_REGULAR_RANK_4)
-#define ADC1_PA4_RANK		(ADC_REGULAR_RANK_5)
-#define ADC1_PA5_RANK		(ADC_REGULAR_RANK_6)
-#define ADC1_PA6_RANK		(ADC_REGULAR_RANK_7)
-#define ADC1_PA7_RANK		(ADC_REGULAR_RANK_8)
-#define ADC1_PB0_RANK		(ADC_REGULAR_RANK_9)
-#define ADC1_PB1_RANK		(ADC_REGULAR_RANK_10)
+#define ADC1_PA0_RANK (ADC_REGULAR_RANK_1)
+#define ADC1_PA1_RANK (ADC_REGULAR_RANK_2)
+#define ADC1_PA2_RANK (ADC_REGULAR_RANK_3)
+#define ADC1_PA3_RANK (ADC_REGULAR_RANK_4)
+#define ADC1_PA4_RANK (ADC_REGULAR_RANK_5)
+#define ADC1_PA5_RANK (ADC_REGULAR_RANK_6)
+#define ADC1_PA6_RANK (ADC_REGULAR_RANK_7)
+#define ADC1_PA7_RANK (ADC_REGULAR_RANK_8)
+#define ADC1_PB0_RANK (ADC_REGULAR_RANK_9)
+#define ADC1_PB1_RANK (ADC_REGULAR_RANK_10)
 
 /**
  * ADC1_RANK_NUM, é a quantidade de canais usados (canais 
@@ -75,8 +74,8 @@
  * Onde cada chX é um índice do vetor que vai de 0 a 29.
  * 
  */
-#define ADC1_RANK_NUM		( 10 )
-#define ADC1_SIZE_BUFFER	( ADC1_RANK_NUM * 4 )
+#define ADC1_RANK_NUM (10)
+#define ADC1_SIZE_BUFFER (ADC1_RANK_NUM * 4)
 
 /**
  * Utilise essas macros para o tempo de amostragem de cada 
@@ -84,19 +83,20 @@
  * 7.5 ciclos de clock.
  * 
  */
-#define ADC1_PA0_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PA1_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PA2_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PA3_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PA4_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PA5_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PA6_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PA7_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PB0_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
-#define ADC1_PB1_SAMPLETIME	(ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PA0_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PA1_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PA2_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PA3_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PA4_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PA5_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PA6_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PA7_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PB0_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
+#define ADC1_PB1_SAMPLETIME (ADC_SAMPLETIME_7CYCLES_5)
 
 /* Definition ----------------------------------------------------------------*/
-typedef enum {
+typedef enum
+{
 	ADC1_PA0 = 0,
 	ADC1_PA1,
 	ADC1_PA2,
@@ -109,7 +109,6 @@ typedef enum {
 	ADC1_PB1,
 	ADC1_NUM
 } xAdcChannel;
-
 
 void adc1_vInitGetSample(void);
 int adc1_iGetValue(const xAdcChannel cxChannel);
@@ -129,7 +128,7 @@ int adc1_iGetValue(const xAdcChannel cxChannel);
  * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS
  * para o controle de troca de contexto em interruições.
  */
-extern void adc1_vTIM3_IRQHandler( BaseType_t *const pxHigherPriorityTaskWoken );
+extern void adc1_vTIM3_IRQHandler(BaseType_t *const pxHigherPriorityTaskWoken);
 
 /**
  * @brief Função dentro da interrupção DMA1_Channel1_IRQHandler
@@ -137,21 +136,20 @@ extern void adc1_vTIM3_IRQHandler( BaseType_t *const pxHigherPriorityTaskWoken )
  * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS
  * para o controle de troca de contexto em interruições.
  */
-extern void adc1_vDMA_IRQHandler( BaseType_t *const pxHigherPriorityTaskWoken );
-
-
+extern void adc1_vDMA_IRQHandler(BaseType_t *const pxHigherPriorityTaskWoken);
 
 /**
  * @brief Função dentro da HAL_ADC_ConvCpltCallback.
  * @note O DMA1 é esposável de por copiar os dados das leituras para
  * o buffer. Toda vez que esta função for chamada significa que o buffer
  * fou completamente populado. e está pronto para ser lido.
+ * 
+ * A HAL_ADC_ConvCpltCallback interrupção tambem é usara atualizar os dados
+ * na swap usada na função adc1_iGetValue. ambas fazem uso de um mutex.
+ * 
  * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS para o controle
  * de troca de contexto em interruições.
  */
-extern void acd1_vBufferDone( BaseType_t *const pxHigherPriorityTaskWoken );
-
-
-
+extern void acd1_vBufferDone(BaseType_t *const pxHigherPriorityTaskWoken);
 
 #endif /* adc_H_ */

@@ -51,8 +51,7 @@ extern void vStartupSystem(void) {
 		NVIC_SystemReset();		// RESET MCU
 	} else {
 		/* iniciar putras tasks */
-
-	}	
+	}
 }
 
 

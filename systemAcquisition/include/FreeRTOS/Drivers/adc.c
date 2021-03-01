@@ -111,11 +111,12 @@ void adc1_vInitGetSample(void){
 
 /**
  * @brief Lé o primeiro valor de um "canal" / "RANK" do ADC1
- * armazenado no buffer. 
+ * armazenado no buffer.
+ * @note a vergável swap (variavel de troca) é atualizada 
+ * pela função e interrupção HAL_ADC_ConvCpltCallback
  * @param cxChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
  * e ADC1_PB1, caso o ADC_PXX seja invalido a função
  * não irá ser executada
- * 
  * @return -1, caso a leitura seja de um canal invalido
  * ou não habilitado
  */
