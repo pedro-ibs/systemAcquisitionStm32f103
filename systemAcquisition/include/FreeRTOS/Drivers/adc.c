@@ -39,22 +39,22 @@
 /* Private variables ---------------------------------------------------------*/
 typedef struct {
 	cu8	uGPIO;
-	cu32	xChannel;
-	cu32	xRANK;
+	cu32	uChannel;
+	cu32	uRANK;
 	cu32	uSamplingTime;
 } xAdcGpio;
 
-static const xAdcGpio xAdcCH[ADC1_NUM] = {
-	{GPIOA0, ADC_CHANNEL_0, ADC1_PA0_RANK,	ADC1_PA0_SAMPLETIME },
-	{GPIOA1, ADC_CHANNEL_1, ADC1_PA1_RANK,	ADC1_PA1_SAMPLETIME },
-	{GPIOA2, ADC_CHANNEL_2, ADC1_PA2_RANK,	ADC1_PA2_SAMPLETIME },
-	{GPIOA3, ADC_CHANNEL_3, ADC1_PA3_RANK,	ADC1_PA3_SAMPLETIME },
-	{GPIOA4, ADC_CHANNEL_4, ADC1_PA4_RANK,	ADC1_PA4_SAMPLETIME },
-	{GPIOA5, ADC_CHANNEL_5, ADC1_PA5_RANK,	ADC1_PA5_SAMPLETIME },
-	{GPIOA6, ADC_CHANNEL_6, ADC1_PA6_RANK,	ADC1_PA6_SAMPLETIME },
-	{GPIOA7, ADC_CHANNEL_7, ADC1_PA7_RANK,	ADC1_PA7_SAMPLETIME },
-	{GPIOB0, ADC_CHANNEL_8, ADC1_PB0_RANK,	ADC1_PB0_SAMPLETIME },
-	{GPIOB1, ADC_CHANNEL_9, ADC1_PB1_RANK,	ADC1_PB1_SAMPLETIME }
+static const xAdcGpio pxAdcCH[ADC1_NUM] = {
+	{GPIOA0, ADC_CHANNEL_0, ADC1_PA0_RANK, ADC1_PA0_SAMPLETIME },
+	{GPIOA1, ADC_CHANNEL_1, ADC1_PA1_RANK, ADC1_PA1_SAMPLETIME },
+	{GPIOA2, ADC_CHANNEL_2, ADC1_PA2_RANK, ADC1_PA2_SAMPLETIME },
+	{GPIOA3, ADC_CHANNEL_3, ADC1_PA3_RANK, ADC1_PA3_SAMPLETIME },
+	{GPIOA4, ADC_CHANNEL_4, ADC1_PA4_RANK, ADC1_PA4_SAMPLETIME },
+	{GPIOA5, ADC_CHANNEL_5, ADC1_PA5_RANK, ADC1_PA5_SAMPLETIME },
+	{GPIOA6, ADC_CHANNEL_6, ADC1_PA6_RANK, ADC1_PA6_SAMPLETIME },
+	{GPIOA7, ADC_CHANNEL_7, ADC1_PA7_RANK, ADC1_PA7_SAMPLETIME },
+	{GPIOB0, ADC_CHANNEL_8, ADC1_PB0_RANK, ADC1_PB0_SAMPLETIME },
+	{GPIOB1, ADC_CHANNEL_9, ADC1_PB1_RANK, ADC1_PB1_SAMPLETIME }
 };
 
 static ADC_HandleTypeDef xAdc1			= { 0 };
@@ -68,7 +68,7 @@ static u16 puAdc1Swap[ADC1_RANK_NUM]		= { 0 };
 static SemaphoreHandle_t xAdc1Semaphore		= NULL;
 
 /* Private Functions ---------------------------------------------------------*/
-void adc1_vInitChannel(const xAdcChannel cxChannel);
+void adc1_vInitChannel(const xAdcChannel cuChannel);
 void adc1_vInitTIM3(cu32 uPrescaler, cu32 uPeriod);
 void adc1_vDMA1(void);
 void adc_vInitVar(void);
@@ -98,8 +98,8 @@ void adc1_vInitGetSample(void){
 		Error_Handler();
 	}
 
-	for (xAdcChannel xIdx=0; xIdx < ADC1_NUM; xIdx++){
-		if( xAdcCH[xIdx].xRANK != ADC1_CHANNEL_DISABLE ){
+	for (xAdcChannel xIdx=0; xIdx < ADC1_NUM; xIdx++) {
+		if( pxAdcCH[xIdx].uRANK != ADC1_CHANNEL_DISABLE ){
 			adc1_vInitChannel(xIdx);
 		}
 	}
@@ -114,34 +114,24 @@ void adc1_vInitGetSample(void){
  * armazenado no buffer.
  * @note a vergável swap (variavel de troca) é atualizada 
  * pela função e interrupção HAL_ADC_ConvCpltCallback
- * @param cxChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
+ * @param cuChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
  * e ADC1_PB1, caso o ADC_PXX seja invalido a função
  * não irá ser executada
  * @return -1, caso a leitura seja de um canal invalido
  * ou não habilitado
  */
-int adc1_iGetValue(const xAdcChannel cxChannel){
-	if(cxChannel >= ADC1_NUM){
+int adc1_iGetValue(const xAdcChannel cuChannel){
+	if(pxAdcCH[cuChannel].uRANK == ADC1_CHANNEL_DISABLE){
 		return -1;
 	}
 
-	if(xAdcCH[cxChannel].xRANK == ADC1_CHANNEL_DISABLE){
-		return -1;
-	}
-
-	int iSwap = -1;
+	u16 uSwap = 0x0000U;
 	xSemaphoreTake(xAdc1Semaphore, portMAX_DELAY);
-	for (size_t uRank=0; uRank<ADC1_RANK_NUM; uRank++) {
-		for (xAdcChannel xIdx=0; xIdx < ADC1_NUM; xIdx++){		
-			if( xAdcCH[xIdx].xRANK != ADC1_CHANNEL_DISABLE ){
-				if(xIdx == cxChannel){
-					iSwap = puAdc1Swap[uRank];
-				}
-			}
-		}
-	}
+	
+	uSwap = puAdc1Swap[pxAdcCH[ cuChannel].uRANK - 1 ];
+	
 	xSemaphoreGive(xAdc1Semaphore);
-	return iSwap;
+	return uSwap;
 }
 
 
@@ -155,18 +145,18 @@ int adc1_iGetValue(const xAdcChannel cxChannel){
 
 /**
  * @brief inicial/configura o canal do periferico adc1
- * @param cxChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
+ * @param cuChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
  * e ADC1_PB1, caso o ADC_PXX seja invalido a função
  * não irá ser executada
  */
-void adc1_vInitChannel(const xAdcChannel cxChannel){
-	gpio_vAnalogMode(xAdcCH[cxChannel].uGPIO);
+void adc1_vInitChannel(const xAdcChannel cuChannel){
+	gpio_vAnalogMode(pxAdcCH[cuChannel].uGPIO);
 
-	ADC_ChannelConfTypeDef xConfig	= {0};
+	ADC_ChannelConfTypeDef xConfig		= {0};
 
-	xConfig.Channel			= xAdcCH[cxChannel].xChannel;
-	xConfig.Rank			= xAdcCH[cxChannel].xRANK;
-	xConfig.SamplingTime		= xAdcCH[cxChannel].uSamplingTime;
+	xConfig.Channel				= pxAdcCH[cuChannel].uChannel;
+	xConfig.Rank				= pxAdcCH[cuChannel].uRANK;
+	xConfig.SamplingTime			= pxAdcCH[cuChannel].uSamplingTime;
 	
 	if (HAL_ADC_ConfigChannel(&xAdc1, &xConfig) != HAL_OK) {
 		Error_Handler();
@@ -196,18 +186,18 @@ void adc1_vInitTIM3(cu32 uPrescaler, cu32 uPeriod){
 
 	__HAL_RCC_TIM3_CLK_ENABLE();
 
-	xTim3.Instance				= TIM3;
-	xTim3.Init.Prescaler			= uPrescaler;
-	xTim3.Init.CounterMode			= TIM_COUNTERMODE_UP;
-	xTim3.Init.Period			= uPeriod;
-	xTim3.Init.ClockDivision		= TIM_CLOCKDIVISION_DIV1;
-	xTim3.Init.AutoReloadPreload		= TIM_AUTORELOAD_PRELOAD_ENABLE;
+	xTim3.Instance					= TIM3;
+	xTim3.Init.Prescaler				= uPrescaler;
+	xTim3.Init.CounterMode				= TIM_COUNTERMODE_UP;
+	xTim3.Init.Period				= uPeriod;
+	xTim3.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
+	xTim3.Init.AutoReloadPreload			= TIM_AUTORELOAD_PRELOAD_ENABLE;
 
 	if (HAL_TIM_Base_Init(&xTim3) != HAL_OK) {
 		Error_Handler();
 	}
 
-	xClockSourceConfig.ClockSource		= TIM_CLOCKSOURCE_INTERNAL;
+	xClockSourceConfig.ClockSource			= TIM_CLOCKSOURCE_INTERNAL;
 	if (HAL_TIM_ConfigClockSource(&xTim3, &xClockSourceConfig) != HAL_OK) {
 		Error_Handler();
 	}
@@ -216,22 +206,21 @@ void adc1_vInitTIM3(cu32 uPrescaler, cu32 uPeriod){
 		Error_Handler();
 	}
 
-	xMasterConfig.MasterOutputTrigger	= TIM_TRGO_UPDATE;
-	xMasterConfig.MasterSlaveMode		= TIM_MASTERSLAVEMODE_DISABLE;
+	xMasterConfig.MasterOutputTrigger		= TIM_TRGO_UPDATE;
+	xMasterConfig.MasterSlaveMode			= TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&xTim3, &xMasterConfig) != HAL_OK){
 		Error_Handler();
 	}
 
-	xConfigOC.OCMode			= TIM_OCMODE_TIMING;
-	xConfigOC.Pulse				= 0;
-	xConfigOC.OCPolarity			= TIM_OCPOLARITY_HIGH;
-	xConfigOC.OCFastMode			= TIM_OCFAST_DISABLE;
+	xConfigOC.OCMode				= TIM_OCMODE_TIMING;
+	xConfigOC.Pulse					= 0;
+	xConfigOC.OCPolarity				= TIM_OCPOLARITY_HIGH;
+	xConfigOC.OCFastMode				= TIM_OCFAST_DISABLE;
 	if (HAL_TIM_OC_ConfigChannel(&xTim3, &xConfigOC, TIM_CHANNEL_2) != HAL_OK){
 		Error_Handler();
 	}
 
 	
-
 	HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(TIM3_IRQn);
 
@@ -296,8 +285,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
 	xSemaphoreTakeFromISR( xAdc1Semaphore, &xHigherPriorityTaskWoken );
 	memcpy(puAdc1Swap, puAdc1Buffer, ( sizeof(u16)*ADC1_RANK_NUM ));
 	xSemaphoreGive(xAdc1Semaphore);
-
+	
 	acd1_vBufferDone(&xHigherPriorityTaskWoken);
-
 	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
