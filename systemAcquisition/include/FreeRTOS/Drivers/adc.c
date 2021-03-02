@@ -3,7 +3,7 @@
  *
  *  Created at:		26/02/2021 10:53:26
  *      Author:		Pedro Igor B. S.
- *	Email:		pedro.igor.ifsp@gmail.com
+ *	Email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *
@@ -11,7 +11,52 @@
  * TODO: Licence
  * ########################################################
  *
- * TODO: documentation or resume or Abstract
+ * Esse driver é dedicado para trabalhar com aquisição de
+ * dados. e faz uso de 3 prerifericos do micro controlador
+ * ADC1, TIM3 e DMA1 canal 1.
+ * 
+ * O TIM3 é responsável por cadenciar a leiruta dos canais
+ * do ADC1. Toda vez que o TIM3 tem um estouro no contador
+ * uma interrupção é gerada e os canais habilitados são 
+ * lidos. O DMA por sua vez copia os dados do ADC1 para um
+ * buffer apos o termino da leitura, e quando esse buffer
+ * for completamente populado o DMA dera outra interrupção
+ * onde é possível acessar e trabalhar com os dados coletados.
+ * 
+ * ###################### COMO USAR ######################
+ * 
+ * use  a macro  ADC1_XXX_RANK para configurar o quais canais
+ * serão utilizado na aquisição. para desativar o canal coloque
+ * "ADC1_CHANNEL_DISABLE", e para ativar "ADC_REGULAR_RANK_X"
+ * de 1 a 10. Os RANKS devem ser inseridos sempre em ordem
+ * crescente, NÃO PULE RANKS.
+ * 
+ * Apos isso "ADC1_RANK_NUM" deve ser configurado om o número
+ * de canais ativos. e ADC1_SIZE_BUFFER deve ser configurado
+ * com o tamanho do buffer desejado, ele deve ser sempre um
+ * numero multiplo de "ADC1_RANK_NUM" e nunca menor.
+ * 
+ * O "ADC1_XXX_SAMPLETIME" é o tempo de clock dedicado para
+ * a aquisição de cafa canal, quando maior o tempo mais precisa
+ * será a medida.
+ * 
+ * A função adc1_vInitGetSample() inicializa todo o driver,
+ * nela ceve ser configurado o estrouro do timer 3 (TIM3) o
+ * que determina a velocidade de aquisição.
+ * 
+ * A função adc1_iGetValue os primeiros dados armazenado no
+ * buffer.
+ * 
+ * 
+ * Cada posição do BUFFER se refere um canal do adc1 (de
+ * acordo com o RANK). Por exemplo utilizando os 10 canais e com
+ * o buffer de tamanho 30 vamos ter um vetor assim:
+ * 	ch0 ch1 ch2 ch3 ch4 ch5 ch6 ch7 ch8 ch9
+ *	ch0 ch1 ch2 ch3 ch4 ch5 ch6 ch7 ch8 ch9
+ *	ch0 ch1 ch2 ch3 ch4 ch5 ch6 ch7 ch8 ch9
+ * Onde cada chX é um índice do vetor que vai de 0 a 29.
+ * e 0 a 9, corespondem sequencialmente a um canal do ADC1
+ *  
  *
  */
 

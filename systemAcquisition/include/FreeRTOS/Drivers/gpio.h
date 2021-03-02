@@ -3,7 +3,7 @@
  *
  *  Created at:		23/02/2021 09:07:11
  *      Author:		Pedro Igor B. S.
- *	Email:		pedro.igor.ifsp@gmail.com
+ *	Email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *
