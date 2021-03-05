@@ -462,9 +462,13 @@ void usart_vIT(const xTTY xtty, BaseType_t *const pxHigherPriorityTaskWoken){
 }
 
 
-/**
- * interrupções da ttyUSART1, ttyUSART2 e ttyUSART3
- */
+
+
+
+/** ################################################################################################ **/
+/** ######################################### Interrupções ######################################### **/
+/** ################################################################################################ **/
+
 void USART1_IRQHandler(void){
 	HAL_UART_IRQHandler(&xUsart[ttyUSART1].xHandle);
 	long xHigherPriorityTaskWoken = pdFALSE;

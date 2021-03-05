@@ -33,6 +33,7 @@
 #include <FreeRTOS/Drivers/gpio.h>
 #include <FreeRTOS/Drivers/uart.h>
 #include <FreeRTOS/Drivers/adc.h>
+#include <FreeRTOS/Drivers/rtc.h>
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -64,7 +65,7 @@ extern void vStartupSystem(void) {
 
 
 /**
- * @brief Inicializar tasks da aplicação, essa função é execurada dendro da main.c no FreeRTOS 
+ * @brief 
  * @param pvParameters, ponteiro do parametro passado na criação da task não nao utilizado nesta 
  * função.
  */
@@ -73,58 +74,31 @@ void vMain_app(void * pvParameters){
 
 	gpio_vInitAll();
 	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
-	usart_vSetup(ttyUSART1, 9600);
 
-	adc1_vInitGetSample();
+	usart_vSetup(ttyUSART1, 9600);
+	
+	adc1_vInitGetSample( 1000, 65535 );
+
+
+	usart_vSendStrLn(ttyUSART1, "alpacas", strlen("alpacas"));
+
+	// rtc_vInit();
+	// adc1_vDeInitGetSample();
+	
 
 	CCHR *pcUsart	= usart_pcGetBuffer(ttyUSART1);
 	char pcValue[20] = {""};
-	
 
-	while (TRUE) {
-		gpio_vToggle(GPIOC13);
+	while (TRUE) {		
+		
+		
+		
+		itoa(adc1_iGetFirstValue(ADC1_PA7), pcValue, DEC);
+		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
+
+
+
 		vTaskDelay(_1S);
-
-			
-		usart_vSendStr(ttyUSART1, "PA00 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PA0), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PA01 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PA1), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PA02 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PA2), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PA03 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PA3), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PA04 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PA4), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PA05 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PA5), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PA06 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PA6), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PA07 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PA7), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PB00 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PB0), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-		usart_vSendStr(ttyUSART1, "PB01 >", strlen("PA00 >"));
-		itoa(adc1_iGetValue(ADC1_PB1), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
 
 
 		if(strstr(pcUsart, "\r\n")){
@@ -137,16 +111,17 @@ void vMain_app(void * pvParameters){
 
 
 
-void acd1_vBufferDone(BaseType_t *const pxHigherPriorityTaskWoken){
+void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken){
+	(void) pxHigherPriorityTaskWoken;
+	gpio_vToggle(GPIOC13);
+}
+
+
+void adc1_vDMA1Ch1Handler( BaseType_t *const pxHigherPriorityTaskWoken ){
 	(void) pxHigherPriorityTaskWoken;
 }
 
 
-void adc1_vDMA_IRQHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
-	(void) pxHigherPriorityTaskWoken;
-}
-
-
-void adc1_vTIM3_IRQHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
+void tim3_vHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
 	(void) pxHigherPriorityTaskWoken;
 }

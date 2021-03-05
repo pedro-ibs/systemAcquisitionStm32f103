@@ -69,8 +69,6 @@
 
 /* macro ---------------------------------------------------------------------*/
 
-#define ADC1_CHANNEL_DISABLE ((u32)0x00000000U)
-
 /**
  * utilise essas macros para configurar os RANK de cada canal do adc1. 
  * O RANK determina quem será lido primeiro, do ADC_REGULAR_RANK_1 ao
@@ -138,8 +136,7 @@
 #define ADC1_PB1_SAMPLETIME	( ADC_SAMPLETIME_7CYCLES_5 )
 
 /* Definition ----------------------------------------------------------------*/
-typedef enum
-{
+typedef enum {
 	ADC1_PA0 = 0,
 	ADC1_PA1,
 	ADC1_PA2,
@@ -153,33 +150,20 @@ typedef enum
 	ADC1_NUM
 } xAdcChannel;
 
-void adc1_vInitGetSample(void);
-int adc1_iGetValue(const xAdcChannel cuChannel);
+void adc1_vInitGetSample(cu32 uPrescaler, cu32 uPeriod);
+void adc1_vDeInitGetSample(void);
+int adc1_iGetFirstValue(const xAdcChannel cuChannel);
 
-/**
- * @brief Função dentro da interrupção TIM3_IRQHandler
- * @note Não trada nenhuma flag de interrupção. A interrupção
- * por tempo é ativa toda vez que há o estouro do contador. O 
- * TIM3 é responsável por  cadenciar a leitura dos canais  do
- * ADC1, quando interrupção é chamada significa que o ADC1
- * comessou uma nova leitura de TODOS os canais habilitados de
- * acordo com as macros  ADC1_XXX_RANK.
- * 
- * O DMA1 é esposável de por copiar os dados das leituras para
- * o buffer. 
- * 
- * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS
- * para o controle de troca de contexto em interruições.
- */
-extern void adc1_vTIM3_IRQHandler(BaseType_t *const pxHigherPriorityTaskWoken);
+
 
 /**
  * @brief Função dentro da interrupção DMA1_Channel1_IRQHandler
- * @note não trada nenhuma flag de interrupção 
+ * @note não trada nenhuma flag de interrupção, porem
+ * pxHigherPriorityTaskWoken é tratado no termino da interrupção  
  * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS
  * para o controle de troca de contexto em interruições.
  */
-extern void adc1_vDMA_IRQHandler(BaseType_t *const pxHigherPriorityTaskWoken);
+extern void adc1_vDMA1Ch1Handler(BaseType_t *const pxHigherPriorityTaskWoken);
 
 /**
  * @brief Função dentro da HAL_ADC_ConvCpltCallback.
@@ -190,9 +174,11 @@ extern void adc1_vDMA_IRQHandler(BaseType_t *const pxHigherPriorityTaskWoken);
  * A HAL_ADC_ConvCpltCallback interrupção tambem é usara atualizar os dados
  * na swap usada na função adc1_iGetValue. ambas fazem uso de um mutex.
  * 
+ * pxHigherPriorityTaskWoken é tratado no termino da interrupção
+ * 
  * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS para o controle
  * de troca de contexto em interruições.
  */
-extern void acd1_vBufferDone(BaseType_t *const pxHigherPriorityTaskWoken);
+extern void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken);
 
 #endif /* adc_H_ */

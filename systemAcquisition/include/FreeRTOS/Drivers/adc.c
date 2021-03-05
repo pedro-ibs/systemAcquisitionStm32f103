@@ -56,8 +56,7 @@
  *	ch0 ch1 ch2 ch3 ch4 ch5 ch6 ch7 ch8 ch9
  * Onde cada chX é um índice do vetor que vai de 0 a 29.
  * e 0 a 9, corespondem sequencialmente a um canal do ADC1
- *  
- *
+ * 
  */
 
 
@@ -65,9 +64,8 @@
 /* Includes ------------------------------------------------------------------*/
 /* stm includes */
 #include <core/includes.h>
-#include <FreeRTOS/Drivers/adc.h>
-#include <FreeRTOS/Drivers/gpio.h> 
 #include <stm32f1xx_hal_adc.h>
+#include <stm32f1xx_hal_dma.h>
 
 
 /* FreeRTOS standard includes.  */
@@ -78,9 +76,15 @@
 #include <FreeRTOS/include/queue.h>
 #include <FreeRTOS/include/semphr.h>
 #include <FreeRTOS/include/portable.h>
-#include <FreeRTOS/Drivers/uart.h>
+
+/* include driver */
+#include <FreeRTOS/Drivers/adc.h>
+#include <FreeRTOS/Drivers/gpio.h>
+#include <FreeRTOS/Drivers/timer.h> 
 
 /* Private macro -------------------------------------------------------------*/
+#define ADC1_CHANNEL_DISABLE		((u32)0x00000000U)
+
 /* Private variables ---------------------------------------------------------*/
 typedef struct {
 	cu8	uGPIO;
@@ -89,7 +93,8 @@ typedef struct {
 	cu32	uSamplingTime;
 } xAdcGpio;
 
-static const xAdcGpio pxAdcCH[ADC1_NUM] = {
+
+static xAdcGpio pxAdcCH[ADC1_NUM] = {
 	{GPIOA0, ADC_CHANNEL_0, ADC1_PA0_RANK, ADC1_PA0_SAMPLETIME },
 	{GPIOA1, ADC_CHANNEL_1, ADC1_PA1_RANK, ADC1_PA1_SAMPLETIME },
 	{GPIOA2, ADC_CHANNEL_2, ADC1_PA2_RANK, ADC1_PA2_SAMPLETIME },
@@ -104,29 +109,30 @@ static const xAdcGpio pxAdcCH[ADC1_NUM] = {
 
 static ADC_HandleTypeDef xAdc1			= { 0 };
 static DMA_HandleTypeDef xDmaAdc1		= { 0 };
-static TIM_HandleTypeDef xTim3			= { 0 };
 
 static u16 puAdc1Buffer[ADC1_SIZE_BUFFER]	= { 0 };
 static u16 puAdc1Swap[ADC1_RANK_NUM]		= { 0 };
-
 
 static SemaphoreHandle_t xAdc1Semaphore		= NULL;
 
 /* Private Functions ---------------------------------------------------------*/
 void adc1_vInitChannel(const xAdcChannel cuChannel);
-void adc1_vInitTIM3(cu32 uPrescaler, cu32 uPeriod);
+void adc1_vDeInitChannel(const xAdcChannel cuChannel);
 void adc1_vDMA1(void);
-void adc_vInitVar(void);
+void adc1_vInitVar(void);
+
 
 /**
  * @brief inicializa o processo de aquisição de dados
  * dos canais o adc1
  * @note, veja as configuração das macros dem adc.h
+ * @param uPrescaler, divisor do contador.
+ * @param uPeriod, contador do Timer 3
  */
-void adc1_vInitGetSample(void){
+void adc1_vInitGetSample(cu32 uPrescaler, cu32 uPeriod){
 
-	adc_vInitVar();
-
+	adc1_vInitVar();
+	xSemaphoreTake(xAdc1Semaphore, portMAX_DELAY);	
 	__HAL_RCC_ADC1_CLK_ENABLE();
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
@@ -150,7 +156,31 @@ void adc1_vInitGetSample(void){
 	}
 
 	adc1_vDMA1();
-	adc1_vInitTIM3( 1000, 65535 );	
+	xSemaphoreGive(xAdc1Semaphore);
+
+	tim3_vStartAdc1Trigger( uPrescaler, uPeriod );		
+}
+
+
+/**
+ * @brief desativa acoleta de dados
+ * @note desativa o ADC1 e canaisrespectivos DMA e TIMER
+ * @param none
+ */
+void adc1_vDeInitGetSample(void){
+	tim3_vDeinit();
+
+	xSemaphoreTake(xAdc1Semaphore, portMAX_DELAY);	
+	__HAL_RCC_ADC1_CLK_DISABLE();
+
+	HAL_DMA_DeInit(xAdc1.DMA_Handle);
+
+	for (xAdcChannel xIdx=0; xIdx < ADC1_NUM; xIdx++) {
+		if( pxAdcCH[xIdx].uRANK != ADC1_CHANNEL_DISABLE ){
+			adc1_vDeInitChannel(xIdx);
+		}
+	}
+	xSemaphoreGive(xAdc1Semaphore);
 }
 
 
@@ -165,20 +195,19 @@ void adc1_vInitGetSample(void){
  * @return -1, caso a leitura seja de um canal invalido
  * ou não habilitado
  */
-int adc1_iGetValue(const xAdcChannel cuChannel){
+int adc1_iGetFirstValue(const xAdcChannel cuChannel){
 	if(pxAdcCH[cuChannel].uRANK == ADC1_CHANNEL_DISABLE){
 		return -1;
 	}
+	xSemaphoreTake(xAdc1Semaphore, portMAX_DELAY);
 
 	u16 uSwap = 0x0000U;
-	xSemaphoreTake(xAdc1Semaphore, portMAX_DELAY);
 	
 	uSwap = puAdc1Swap[pxAdcCH[ cuChannel].uRANK - 1 ];
 	
 	xSemaphoreGive(xAdc1Semaphore);
 	return uSwap;
 }
-
 
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
@@ -189,10 +218,9 @@ int adc1_iGetValue(const xAdcChannel cuChannel){
 
 
 /**
- * @brief inicial/configura o canal do periferico adc1
+ * @brief iniciar/configura o canal do periferico ADC1
  * @param cuChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
- * e ADC1_PB1, caso o ADC_PXX seja invalido a função
- * não irá ser executada
+ * e ADC1_PB1
  */
 void adc1_vInitChannel(const xAdcChannel cuChannel){
 	gpio_vAnalogMode(pxAdcCH[cuChannel].uGPIO);
@@ -208,69 +236,31 @@ void adc1_vInitChannel(const xAdcChannel cuChannel){
 	}
 }
 
+
+
+/**
+ * @brief Desativa o canal do periferico ADC1
+ * @param cuChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
+ * e ADC1_PB1
+ */
+void adc1_vDeInitChannel(const xAdcChannel cuChannel){
+	gpio_vDeinit(cuChannel);	
+}
+
+
+
 /**
  * @brief Inicializa as variaveis utilizada no driver adc.h
  * @param none
  */
-void adc_vInitVar(void){
+void adc1_vInitVar(void){
 	if(xAdc1Semaphore == NULL){
 		xAdc1Semaphore = xSemaphoreCreateMutex();
 	}
 }
 
 
-/**
- * @brief Configura e inicializa do Timer 3
- * @param uPrescaler, divisor do contador.
- * @param uPeriod, contador do Timer 3
- */
-void adc1_vInitTIM3(cu32 uPrescaler, cu32 uPeriod){
-	TIM_ClockConfigTypeDef xClockSourceConfig	= {0};
-	TIM_MasterConfigTypeDef xMasterConfig		= {0};
-	TIM_OC_InitTypeDef xConfigOC			= {0};
 
-	__HAL_RCC_TIM3_CLK_ENABLE();
-
-	xTim3.Instance					= TIM3;
-	xTim3.Init.Prescaler				= uPrescaler;
-	xTim3.Init.CounterMode				= TIM_COUNTERMODE_UP;
-	xTim3.Init.Period				= uPeriod;
-	xTim3.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
-	xTim3.Init.AutoReloadPreload			= TIM_AUTORELOAD_PRELOAD_ENABLE;
-
-	if (HAL_TIM_Base_Init(&xTim3) != HAL_OK) {
-		Error_Handler();
-	}
-
-	xClockSourceConfig.ClockSource			= TIM_CLOCKSOURCE_INTERNAL;
-	if (HAL_TIM_ConfigClockSource(&xTim3, &xClockSourceConfig) != HAL_OK) {
-		Error_Handler();
-	}
-
-	if (HAL_TIM_OC_Init(&xTim3) != HAL_OK) {
-		Error_Handler();
-	}
-
-	xMasterConfig.MasterOutputTrigger		= TIM_TRGO_UPDATE;
-	xMasterConfig.MasterSlaveMode			= TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&xTim3, &xMasterConfig) != HAL_OK){
-		Error_Handler();
-	}
-
-	xConfigOC.OCMode				= TIM_OCMODE_TIMING;
-	xConfigOC.Pulse					= 0;
-	xConfigOC.OCPolarity				= TIM_OCPOLARITY_HIGH;
-	xConfigOC.OCFastMode				= TIM_OCFAST_DISABLE;
-	if (HAL_TIM_OC_ConfigChannel(&xTim3, &xConfigOC, TIM_CHANNEL_2) != HAL_OK){
-		Error_Handler();
-	}
-
-	
-	HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(TIM3_IRQn);
-
-	HAL_TIM_Base_Start_IT(&xTim3);
-}
 
 
 /**
@@ -299,27 +289,25 @@ void adc1_vDMA1(void){
 	HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
+
 	HAL_ADC_Start_DMA(&xAdc1, (uint32_t*)&puAdc1Buffer, ADC1_SIZE_BUFFER);
 }
+
+
+
 
 /** ################################################################################################ **/
 /** ######################################### Interrupções ######################################### **/
 /** ################################################################################################ **/
 
+
 void DMA1_Channel1_IRQHandler(void) {
 	HAL_DMA_IRQHandler(&xDmaAdc1);
 	long xHigherPriorityTaskWoken = pdFALSE;
-	adc1_vDMA_IRQHandler(&xHigherPriorityTaskWoken);
-	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
-
-}
-
-void TIM3_IRQHandler(void) {
-	HAL_TIM_IRQHandler(&xTim3);
-	long xHigherPriorityTaskWoken = pdFALSE;
-	adc1_vTIM3_IRQHandler(&xHigherPriorityTaskWoken);
+	adc1_vDMA1Ch1Handler(&xHigherPriorityTaskWoken);
 	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
+
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
 	long xHigherPriorityTaskWoken = pdFALSE;
@@ -331,6 +319,6 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
 	memcpy(puAdc1Swap, puAdc1Buffer, ( sizeof(u16)*ADC1_RANK_NUM ));
 	xSemaphoreGive(xAdc1Semaphore);
 	
-	acd1_vBufferDone(&xHigherPriorityTaskWoken);
+	acd1_vBufferDoneHandler(&xHigherPriorityTaskWoken);
 	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }

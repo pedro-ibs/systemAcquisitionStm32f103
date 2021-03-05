@@ -154,7 +154,6 @@ void gpio_vMode (const xGpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull) {
  */
 void gpio_vAnalogMode (const xGpioLabel cxGPIOxx) {
 	
-	HAL_GPIO_WritePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx, GPIO_PIN_RESET);
 	
 	GPIO_InitTypeDef GPIO_InitStruct	= {0};
 
@@ -164,6 +163,15 @@ void gpio_vAnalogMode (const xGpioLabel cxGPIOxx) {
 	GPIO_InitStruct.Speed			= GPIO_SPEED_FREQ_HIGH;
 	
 	HAL_GPIO_Init(xGpio[cxGPIOxx].pxGPIOx, &GPIO_InitStruct);
+}
+
+
+/**
+ * @brief desativa o pino GPIO
+ * @param cxGPIOxx, pino a ser configurado
+ */
+void gpio_vDeinit(const xGpioLabel cxGPIOxx){
+	HAL_GPIO_DeInit(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx);
 }
 
 

@@ -82,6 +82,7 @@ void gpio_vInitAll( void );
 void gpio_vDisableDebug ( void );
 void gpio_vMode (const xGpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull );
 void gpio_vAnalogMode (const xGpioLabel cxGPIOxx);
+void gpio_vDeinit(const xGpioLabel cxGPIOxx);
 _bool gpio_bRead(const xGpioLabel cxGPIOxx);
 void gpio_vWrite(const xGpioLabel cxGPIOxx, _bool bValue );
 void gpio_vToggle(const xGpioLabel cxGPIOxx);
