@@ -55,10 +55,6 @@ void tim3_vStartAdc1Trigger(cu32 uPrescaler, cu32 uPeriod) {
 	tim3_vInitVar();
 	xSemaphoreTake(xTim3Semaphore, portMAX_DELAY);	
 
-	TIM_ClockConfigTypeDef xClockSourceConfig	= {0};
-	TIM_MasterConfigTypeDef xMasterConfig		= {0};
-	TIM_OC_InitTypeDef xConfigOC			= {0};
-
 	__HAL_RCC_TIM3_CLK_ENABLE();
 
 	xTim3.Instance					= TIM3;
@@ -67,11 +63,11 @@ void tim3_vStartAdc1Trigger(cu32 uPrescaler, cu32 uPeriod) {
 	xTim3.Init.Period				= uPeriod;
 	xTim3.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
 	xTim3.Init.AutoReloadPreload			= TIM_AUTORELOAD_PRELOAD_ENABLE;
-
 	if (HAL_TIM_Base_Init(&xTim3) != HAL_OK) {
 		Error_Handler();
 	}
 
+	TIM_ClockConfigTypeDef xClockSourceConfig	= { 0 };
 	xClockSourceConfig.ClockSource			= TIM_CLOCKSOURCE_INTERNAL;
 	if (HAL_TIM_ConfigClockSource(&xTim3, &xClockSourceConfig) != HAL_OK) {
 		Error_Handler();
@@ -81,12 +77,14 @@ void tim3_vStartAdc1Trigger(cu32 uPrescaler, cu32 uPeriod) {
 		Error_Handler();
 	}
 
+	TIM_MasterConfigTypeDef xMasterConfig		= { 0 };
 	xMasterConfig.MasterOutputTrigger		= TIM_TRGO_UPDATE;
 	xMasterConfig.MasterSlaveMode			= TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&xTim3, &xMasterConfig) != HAL_OK){
 		Error_Handler();
 	}
 
+	TIM_OC_InitTypeDef xConfigOC			= { 0 };
 	xConfigOC.OCMode				= TIM_OCMODE_TIMING;
 	xConfigOC.Pulse					= 0;
 	xConfigOC.OCPolarity				= TIM_OCPOLARITY_HIGH;
@@ -102,6 +100,54 @@ void tim3_vStartAdc1Trigger(cu32 uPrescaler, cu32 uPeriod) {
 	xSemaphoreGive(xTim3Semaphore);
 
 }
+
+
+/**
+ * @brief Configura a interrupção por tempo do TIM3 
+ * @param uPrescaler, divisor do contador.
+ * @param uPeriod, contador do Timer 3
+ */
+void tim3_vStartIT(cu32 uPrescaler, cu32 uPeriod) {
+
+	tim3_vInitVar();
+
+	xSemaphoreTake(xTim3Semaphore, portMAX_DELAY);	
+
+	__HAL_RCC_TIM3_CLK_ENABLE();
+
+	xTim3.Instance					= TIM3;
+	xTim3.Init.Prescaler				= uPrescaler;
+	xTim3.Init.CounterMode				= TIM_COUNTERMODE_UP;
+	xTim3.Init.Period				= uPeriod;
+	xTim3.Init.ClockDivision			= TIM_CLOCKDIVISION_DIV1;
+	xTim3.Init.AutoReloadPreload			= TIM_AUTORELOAD_PRELOAD_ENABLE;
+	if (HAL_TIM_Base_Init(&xTim3) != HAL_OK) {
+		Error_Handler();
+	}
+
+
+	TIM_ClockConfigTypeDef xClockSourceConfig 	= { 0 };
+	xClockSourceConfig.ClockSource 			= TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&xTim3, &xClockSourceConfig) != HAL_OK) {
+		Error_Handler();
+	}
+
+	TIM_MasterConfigTypeDef xMasterConfig		= { 0 };
+	xMasterConfig.MasterOutputTrigger		= TIM_TRGO_RESET;
+	xMasterConfig.MasterSlaveMode			= TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&xTim3, &xMasterConfig) != HAL_OK) {
+		Error_Handler();
+	}
+
+	HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(TIM3_IRQn);
+
+	HAL_TIM_Base_Start_IT(&xTim3);
+
+	xSemaphoreGive(xTim3Semaphore);
+
+}
+
 
 /**
  * @brief Desativa o timer 3

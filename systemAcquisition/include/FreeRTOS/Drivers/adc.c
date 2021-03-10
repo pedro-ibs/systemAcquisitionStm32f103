@@ -168,6 +168,11 @@ void adc1_vInitGetSample(cu32 uPrescaler, cu32 uPeriod){
  * @param none
  */
 void adc1_vDeInitGetSample(void){
+
+	if(xAdc1Semaphore == NULL){
+		return;
+	}
+	
 	tim3_vDeinit();
 
 	xSemaphoreTake(xAdc1Semaphore, portMAX_DELAY);	
@@ -199,6 +204,11 @@ int adc1_iGetFirstValue(const xAdcChannel cuChannel){
 	if(pxAdcCH[cuChannel].uRANK == ADC1_CHANNEL_DISABLE){
 		return -1;
 	}
+
+	if(xAdc1Semaphore == NULL){
+		return -1;
+	}
+
 	xSemaphoreTake(xAdc1Semaphore, portMAX_DELAY);
 
 	u16 uSwap = 0x0000U;

@@ -27,6 +27,7 @@
 
 
 void tim3_vStartAdc1Trigger(cu32 uPrescaler, cu32 uPeriod);
+void tim3_vStartIT(cu32 uPrescaler, cu32 uPeriod);
 void tim3_vDeinit( void );
 
 

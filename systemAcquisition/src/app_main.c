@@ -34,6 +34,8 @@
 #include <FreeRTOS/Drivers/uart.h>
 #include <FreeRTOS/Drivers/adc.h>
 #include <FreeRTOS/Drivers/rtc.h>
+#include <FreeRTOS/Drivers/timer.h>
+
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -77,27 +79,35 @@ void vMain_app(void * pvParameters){
 
 	usart_vSetup(ttyUSART1, 9600);
 	
+
+	usart_vSendStrLn(ttyUSART1, "start get sample", strlen("start get sample"));
 	adc1_vInitGetSample( 1000, 65535 );
+	vTaskDelay(_10S);
+
+	usart_vSendStrLn(ttyUSART1, "stop get sample", strlen("stop get sample"));
+	adc1_vDeInitGetSample();
+	vTaskDelay(_3S);
+	
+
+	usart_vSendStrLn(ttyUSART1, "start timer it", strlen("start timer it"));
+	tim3_vStartIT( 500, 65535 );
+	vTaskDelay(_10S);
+	usart_vSendStrLn(ttyUSART1, "stop timer it", strlen("stop timer it"));
+	tim3_vDeinit();
+	vTaskDelay(_3S);
 
 
-	usart_vSendStrLn(ttyUSART1, "alpacas", strlen("alpacas"));
-
-	// rtc_vInit();
-	// adc1_vDeInitGetSample();
 	
 
 	CCHR *pcUsart	= usart_pcGetBuffer(ttyUSART1);
-	char pcValue[20] = {""};
+	char pcValue[20] = { "" };
 
 	while (TRUE) {		
 		
-		
+		usart_vSendStrLn(ttyUSART1, "alpacas", strlen("alpacas"));
 		
 		itoa(adc1_iGetFirstValue(ADC1_PA7), pcValue, DEC);
 		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-
-
-
 		vTaskDelay(_1S);
 
 
@@ -110,18 +120,26 @@ void vMain_app(void * pvParameters){
 
 
 
-
+/**
+ * usado pelo adc1 
+ */
 void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken){
 	(void) pxHigherPriorityTaskWoken;
-	gpio_vToggle(GPIOC13);
+	// while(TRUE);
 }
 
-
+/**
+ * usado pelo adc1
+ */
 void adc1_vDMA1Ch1Handler( BaseType_t *const pxHigherPriorityTaskWoken ){
 	(void) pxHigherPriorityTaskWoken;
+	// while(TRUE);
 }
 
-
+/**
+ * usado pelo adc1 e/ou tim3
+ */
 void tim3_vHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
+	gpio_vToggle(GPIOC13);
 	(void) pxHigherPriorityTaskWoken;
 }
