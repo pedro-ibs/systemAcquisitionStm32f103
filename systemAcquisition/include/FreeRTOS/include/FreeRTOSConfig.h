@@ -115,9 +115,7 @@ configKERNEL_INTERRUPT_PRIORITY setting.  Here 15 corresponds to the lowest
 NVIC value of 255. */
 #define configLIBRARY_KERNEL_INTERRUPT_PRIORITY	( 15 )
 
-/*
- * my config
- */
+/* ********************* my config ********************* */
 
 /* Enable the heap, it is must necessary!!
  * just can have the values 1 to 5
@@ -128,7 +126,12 @@ NVIC value of 255. */
  * 	heap_4.c		( 4 )
  * 	heap_5.c		( 5 )
  */
-#define MY_HEAP_CONFIG		( 4 )
+#define HEAP_1			( 1 )
+#define HEAP_2			( 2 )
+#define HEAP_3			( 3 )
+#define HEAP_4			( 4 )
+#define HEAP_5			( 5 )
+#define MY_HEAP_CONFIG		( HEAP_4 )
 
 
 #include <core/includes.h>

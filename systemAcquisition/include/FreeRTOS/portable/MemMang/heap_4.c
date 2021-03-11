@@ -45,7 +45,7 @@ task.h is included from an application file. */
 
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
-#if( MY_HEAP_CONFIG == 4 )
+#if( MY_HEAP_CONFIG == HEAP_4 )
 
 
 #if( configSUPPORT_DYNAMIC_ALLOCATION == 0 )

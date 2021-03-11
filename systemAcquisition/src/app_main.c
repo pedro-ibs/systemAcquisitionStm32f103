@@ -80,41 +80,45 @@ void vMain_app(void * pvParameters){
 	usart_vSetup(ttyUSART1, 9600);
 	
 
-	usart_vSendStrLn(ttyUSART1, "start get sample", strlen("start get sample"));
-	adc1_vInitGetSample( 1000, 65535 );
-	vTaskDelay(_10S);
+	// usart_vSendStrLn(ttyUSART1, "start get sample", strlen("start get sample"));
+	// adc1_vInitGetSample( 1000, 65535 );
+	// vTaskDelay(_10S);
 
-	usart_vSendStrLn(ttyUSART1, "stop get sample", strlen("stop get sample"));
-	adc1_vDeInitGetSample();
-	vTaskDelay(_3S);
+	// usart_vSendStrLn(ttyUSART1, "stop get sample", strlen("stop get sample"));
+	// adc1_vDeInitGetSample();
+	// vTaskDelay(_3S);
 	
 
-	usart_vSendStrLn(ttyUSART1, "start timer it", strlen("start timer it"));
-	tim3_vStartIT( 500, 65535 );
-	vTaskDelay(_10S);
-	usart_vSendStrLn(ttyUSART1, "stop timer it", strlen("stop timer it"));
-	tim3_vDeinit();
-	vTaskDelay(_3S);
+	// usart_vSendStrLn(ttyUSART1, "start timer it", strlen("start timer it"));
+	// tim3_vStartIT( 500, 65535 );
+	// vTaskDelay(_10S);
+	// usart_vSendStrLn(ttyUSART1, "stop timer it", strlen("stop timer it"));
+	// tim3_vDeinit();
+	// vTaskDelay(_3S);
 
-
+	rtc_vInit();
 	
+	usart_vSendStrLn(ttyUSART1, "alpacas", strlen("alpacas"));
 
-	CCHR *pcUsart	= usart_pcGetBuffer(ttyUSART1);
-	char pcValue[20] = { "" };
+
+	// CCHR *pcUsart	= usart_pcGetBuffer(ttyUSART1);
+	char pcValue[100] = { "" };
 
 	while (TRUE) {		
 		
-		usart_vSendStrLn(ttyUSART1, "alpacas", strlen("alpacas"));
+		gpio_vToggle(GPIOC13);
+
+		// usart_vSendStrLn(ttyUSART1, rtc_pcGetTimeStamp(pcValue), strlen(pcValue));
 		
-		itoa(adc1_iGetFirstValue(ADC1_PA7), pcValue, DEC);
-		usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
+		// itoa(adc1_iGetFirstValue(ADC1_PA7), pcValue, DEC);
+		// usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
 		vTaskDelay(_1S);
 
 
-		if(strstr(pcUsart, "\r\n")){
-			usart_vSendStr(ttyUSART1, pcUsart, strlen(pcUsart));
-			usart_vCleanBuffer(ttyUSART1);
-		}
+		// if(strstr(pcUsart, "\r\n")){
+		// 	usart_vSendStr(ttyUSART1, pcUsart, strlen(pcUsart));
+		// 	usart_vCleanBuffer(ttyUSART1);
+		// }
 	}
 }
 
@@ -125,7 +129,6 @@ void vMain_app(void * pvParameters){
  */
 void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken){
 	(void) pxHigherPriorityTaskWoken;
-	// while(TRUE);
 }
 
 /**
@@ -133,13 +136,11 @@ void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken){
  */
 void adc1_vDMA1Ch1Handler( BaseType_t *const pxHigherPriorityTaskWoken ){
 	(void) pxHigherPriorityTaskWoken;
-	// while(TRUE);
 }
 
 /**
  * usado pelo adc1 e/ou tim3
  */
 void tim3_vHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
-	gpio_vToggle(GPIOC13);
 	(void) pxHigherPriorityTaskWoken;
 }

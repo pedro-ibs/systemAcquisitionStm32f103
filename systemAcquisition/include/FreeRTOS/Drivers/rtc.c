@@ -39,7 +39,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-RTC_HandleTypeDef xRtc		= { 0 };
+static RTC_HandleTypeDef xRtc		= { 0 };
 
 
 /* Private Functions ---------------------------------------------------------*/
@@ -57,20 +57,19 @@ void rtc_vInit(void){
 	__HAL_RCC_BKP_CLK_ENABLE();
 	__HAL_RCC_RTC_ENABLE();	
 
-	/** Inicar apenas o RTC **/
-	xRtc.Instance		= RTC;
-	xRtc.Init.AsynchPrediv	= RTC_AUTO_1_SECOND;
-	xRtc.Init.OutPut 	= RTC_OUTPUTSOURCE_NONE;
+	/** Inicar RTC **/
+	xRtc.Instance			= RTC;
+	xRtc.Init.AsynchPrediv		= RTC_AUTO_1_SECOND;
+	xRtc.Init.OutPut 		= RTC_OUTPUTSOURCE_NONE;
 	if (HAL_RTC_Init(&xRtc) != HAL_OK) {
 		Error_Handler();
 	}
 
-
 	/** Iniciar RTC e setar o tempo e data **/
 	RTC_TimeTypeDef xTime		= { 0 };
-	xTime.Hours			= 0x23;
-	xTime.Minutes			= 0x56;
-	xTime.Seconds			= 0x19;
+	xTime.Hours			= 0x23U;
+	xTime.Minutes			= 0x56U;
+	xTime.Seconds			= 0x19U;
 	if (HAL_RTC_SetTime(&xRtc, &xTime, RTC_FORMAT_BCD) != HAL_OK) {
 		Error_Handler();
 	}
@@ -78,8 +77,8 @@ void rtc_vInit(void){
 	RTC_DateTypeDef xDateToUpdate	= { 0 };
 	xDateToUpdate.WeekDay		= RTC_WEEKDAY_SUNDAY;
 	xDateToUpdate.Month		= RTC_MONTH_JULY;
-	xDateToUpdate.Date		= 0x20;
-	xDateToUpdate.Year		= 0x69;
+	xDateToUpdate.Date		= 0x20U;
+	xDateToUpdate.Year		= 0x69U;
 	if (HAL_RTC_SetDate(&xRtc, &xDateToUpdate, RTC_FORMAT_BCD) != HAL_OK) {
 		Error_Handler();
 	}
