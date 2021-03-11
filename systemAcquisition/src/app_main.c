@@ -36,6 +36,8 @@
 #include <FreeRTOS/Drivers/rtc.h>
 #include <FreeRTOS/Drivers/timer.h>
 
+#include <lib/textProtocol/protocol.h>
+
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -108,7 +110,7 @@ void vMain_app(void * pvParameters){
 		
 		gpio_vToggle(GPIOC13);
 
-		// usart_vSendStrLn(ttyUSART1, rtc_pcGetTimeStamp(pcValue), strlen(pcValue));
+		usart_vSendStrLn(ttyUSART1, rtc_pcGetTimeStamp(pcCleanStr(pcValue)), strlen(pcValue));
 		
 		// itoa(adc1_iGetFirstValue(ADC1_PA7), pcValue, DEC);
 		// usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
