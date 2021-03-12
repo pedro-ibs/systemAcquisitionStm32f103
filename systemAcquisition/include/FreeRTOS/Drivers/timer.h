@@ -25,7 +25,10 @@
  * -------------------------------------------------------------------
  * ########################################################
  *
- * TODO: documentation or resume or Abstract
+ * Driver para controlar o temporisador tim3 esse temporisador tambem
+ * é usado no driver adc para controlar da aquisição de dados. Alem
+ * disso é possível usar esse temporisador para gerarinterrupções
+ * periodicas
  *
  */
 
