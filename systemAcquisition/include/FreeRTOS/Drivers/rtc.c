@@ -43,10 +43,8 @@
 static RTC_HandleTypeDef xRtc			= { 0 };
 static SemaphoreHandle_t xSemaphoreRTC		= NULL;
 
-
-
 /* Private Functions ---------------------------------------------------------*/
-
+char *__pcZeroLeft(char *pcStr, const size_t cuSizeWithZeros);
 
 
 /**
@@ -157,32 +155,32 @@ CCHR *rtc_pcBuildTimeStamp(const RTC_DateTypeDef xDate, const RTC_TimeTypeDef xT
 
 	// dia
 	itoa(xDate.Date, pcSwap, DEC);
-	strcat(pcBuffer, pcSwap);
+	strcat(pcBuffer, __pcZeroLeft(pcSwap, 2));
 	strcat(pcBuffer, "/");
 
 	// mes
 	itoa(xDate.Month, pcSwap, DEC);
-	strcat(pcBuffer, pcSwap);
+	strcat(pcBuffer, __pcZeroLeft(pcSwap, 2));
 	strcat(pcBuffer, "/");
 
 	// ano
 	itoa(xDate.Year, pcSwap, DEC);
-	strcat(pcBuffer, pcSwap);
+	strcat(pcBuffer, __pcZeroLeft(pcSwap, 2));
 	strcat(pcBuffer, "-");
 
 	// horas
 	itoa(xTime.Hours, pcSwap, DEC);
-	strcat(pcBuffer, pcSwap);
+	strcat(pcBuffer, __pcZeroLeft(pcSwap, 2));
 	strcat(pcBuffer, ":");
 
 	// minutos
 	itoa(xTime.Minutes, pcSwap, DEC);
-	strcat(pcBuffer, pcSwap);
+	strcat(pcBuffer, __pcZeroLeft(pcSwap, 2));
 	strcat(pcBuffer, ":");
 
 	// segundos
 	itoa(xTime.Seconds, pcSwap, DEC);
-	strcat(pcBuffer, pcSwap);
+	strcat(pcBuffer, __pcZeroLeft(pcSwap, 2));
 	strcat(pcBuffer, "");
 
 	xSemaphoreGive(xSemaphoreRTC);
@@ -209,3 +207,29 @@ CCHR *rtc_pcGetTimeStamp(char *pcBuffer){
 /*########################################################################################################################################################*/
 /*-------------------------------------------------------------------- Private Functions -----------------------------------------------------------------*/
 /*########################################################################################################################################################*/
+
+
+
+
+/**
+ * @brief adiciona zero a esquerda.
+ * @param pcStr string que será editada
+ * @param cuSizeWithZeros quantidade de zeros a esqurda 
+ * @return char*: string com os zeros a esquerda inseridos
+ * 
+ * @note copiado da lib textProtocol:
+ * https://github.com/pedro-ibs/textProtocol
+ * 
+ */
+char *__pcZeroLeft(char *pcStr, const size_t cuSizeWithZeros){
+	while (cuSizeWithZeros > strlen(pcStr)){
+		size_t idx = strlen(pcStr);
+		do{
+			pcStr[idx+1] = pcStr[idx];
+			if(idx-- == 0) break;
+		}while(TRUE);
+		pcStr[0] = '0';
+	}
+
+	return pcStr;
+}

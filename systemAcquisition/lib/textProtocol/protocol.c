@@ -23,7 +23,10 @@
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
- *
+ * -------------------------------------------------------------------
+ * 
+ *  https://github.com/pedro-ibs/textProtocol
+ * 
  * ########################################################
  *
  * Essa biblioteca foi desenvolvida para trabalhar com protocolos de
@@ -286,10 +289,14 @@ char *pcCleanStr(char *pcStr){
 
 
 /**
- * @brief adiciona zero a esquerda.
+ * @brief completa ostring com zero a esquerda
  * @param pcStr string que será editada
- * @param cuSizeWithZeros quantidade de zeros a esqurda 
+ * @param cuSizeWithZeros tamanho desejado para a string  
  * @return char*: string com os zeros a esquerda inseridos
+ * o tamanho real da string for 3 e o tamanho desejador for 5
+ * a função completará com 0 (zero) os espaço restamante:
+ * pcZeroLeft( "str", 5 ) tem saida de 00str
+ * 
  */
 char *pcZeroLeft(char *pcStr, const size_t cuSizeWithZeros){
 	while (cuSizeWithZeros > strlen(pcStr)){
