@@ -8,7 +8,7 @@
  * 	tabSize:	8
  *
  * ########################################################
- * -------------------------------------------------------------------
+ * 
  *   Copyright (C) Pedro Igor B. S 2019
  * -------------------------------------------------------------------
  *
@@ -23,10 +23,14 @@
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
- * -------------------------------------------------------------------
+ * 
  * ########################################################
  *
- * TODO: documentation or resume or Abstract
+ * Essa biblioteca foi desenvolvida para trabalhar com protocolos de
+ * texto geralmente utilizados em comunicações serias como RS232
+ * 
+ * Com ela é possível traduzir e trabalhar com diverssos tipos de 
+ * protocolos e textos padronizados como CSV
  *
  */
 

@@ -11,7 +11,8 @@
  * TODO: Licence
  * ########################################################
  *
- * TODO: documentation or resume or Abstract
+ * Controla a periferia de hardware RCT. essa biblioteca
+ * pode gerar uma data como 20/7/69-23:56:19
  *
  */
 
@@ -39,7 +40,9 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static RTC_HandleTypeDef xRtc		= { 0 };
+static RTC_HandleTypeDef xRtc			= { 0 };
+static SemaphoreHandle_t xSemaphoreRTC		= NULL;
+
 
 
 /* Private Functions ---------------------------------------------------------*/
@@ -52,6 +55,12 @@ static RTC_HandleTypeDef xRtc		= { 0 };
  * 
  */
 void rtc_vInit(void){
+
+	if(xSemaphoreRTC == NULL){
+		xSemaphoreRTC = xSemaphoreCreateMutex();
+	}
+
+	xSemaphoreTake(xSemaphoreRTC, portMAX_DELAY);
 
 	HAL_PWR_EnableBkUpAccess();
 	__HAL_RCC_BKP_CLK_ENABLE();
@@ -67,21 +76,25 @@ void rtc_vInit(void){
 
 	/** Iniciar RTC e setar o tempo e data **/
 	RTC_TimeTypeDef xTime		= { 0 };
-	xTime.Hours			= 0x23U;
-	xTime.Minutes			= 0x56U;
-	xTime.Seconds			= 0x19U;
-	if (HAL_RTC_SetTime(&xRtc, &xTime, RTC_FORMAT_BCD) != HAL_OK) {
+	xTime.Hours			= 23;
+	xTime.Minutes			= 56;
+	xTime.Seconds			= 19;
+	if (HAL_RTC_SetTime(&xRtc, &xTime, RTC_FORMAT_BIN) != HAL_OK) {
 		Error_Handler();
 	}
 
 	RTC_DateTypeDef xDateToUpdate	= { 0 };
 	xDateToUpdate.WeekDay		= RTC_WEEKDAY_SUNDAY;
 	xDateToUpdate.Month		= RTC_MONTH_JULY;
-	xDateToUpdate.Date		= 0x20U;
-	xDateToUpdate.Year		= 0x69U;
-	if (HAL_RTC_SetDate(&xRtc, &xDateToUpdate, RTC_FORMAT_BCD) != HAL_OK) {
+	xDateToUpdate.Date		= 20;
+	xDateToUpdate.Year		= 69;
+	if (HAL_RTC_SetDate(&xRtc, &xDateToUpdate, RTC_FORMAT_BIN) != HAL_OK) {
 		Error_Handler();
 	}
+
+
+	xSemaphoreGive(xSemaphoreRTC);
+
 }
 
 
@@ -107,8 +120,10 @@ TickType_t rtc_xTaskGetSeconds( void ){
  * @return RTC_TimeTypeDef
  */
 RTC_TimeTypeDef rtc_xGetTime(void){
+	xSemaphoreTake(xSemaphoreRTC, portMAX_DELAY);
 	RTC_TimeTypeDef xTime = { 0 };
-	HAL_RTC_GetTime(&xRtc, &xTime, RTC_FORMAT_BCD);
+	HAL_RTC_GetTime(&xRtc, &xTime, RTC_FORMAT_BIN);
+	xSemaphoreGive(xSemaphoreRTC);
 	return xTime;
 }
 
@@ -118,9 +133,11 @@ RTC_TimeTypeDef rtc_xGetTime(void){
  * @param none
  * @return RTC_DateTypeDef
  */
-RTC_DateTypeDef rtc_xGetData(void){
+RTC_DateTypeDef rtc_xGetDate(void){
+	xSemaphoreTake(xSemaphoreRTC, portMAX_DELAY);
 	RTC_DateTypeDef xDate = { 0 };
-	HAL_RTC_GetDate(&xRtc, &xDate, RTC_FORMAT_BCD);
+	HAL_RTC_GetDate(&xRtc, &xDate, RTC_FORMAT_BIN);
+	xSemaphoreGive(xSemaphoreRTC);
 	return xDate;
 }
 
@@ -133,38 +150,42 @@ RTC_DateTypeDef rtc_xGetData(void){
  * @param pcBuffer: vetor ondo o time stamp será montado
  * @return pcBuffer com a data montada
  */
-CCHR *rtc_pcBuildTimeStamp(const RTC_DateTypeDef xDate, const RTC_TimeTypeDef xTime, char *pcBuffer){
+CCHR *rtc_pcBuildTimeStamp(const RTC_DateTypeDef xDate, const RTC_TimeTypeDef xTime, char *pcBuffer){	
+	xSemaphoreTake(xSemaphoreRTC, portMAX_DELAY);
+
 	char pcSwap[4];
 
 	// dia
-	itoa(xDate.Date, pcSwap, HEX);
+	itoa(xDate.Date, pcSwap, DEC);
 	strcat(pcBuffer, pcSwap);
 	strcat(pcBuffer, "/");
 
 	// mes
-	itoa(xDate.Month, pcSwap, HEX);
+	itoa(xDate.Month, pcSwap, DEC);
 	strcat(pcBuffer, pcSwap);
 	strcat(pcBuffer, "/");
 
 	// ano
-	itoa(xDate.Year, pcSwap, HEX);
+	itoa(xDate.Year, pcSwap, DEC);
 	strcat(pcBuffer, pcSwap);
 	strcat(pcBuffer, "-");
 
 	// horas
-	itoa(xTime.Hours, pcSwap, HEX);
+	itoa(xTime.Hours, pcSwap, DEC);
 	strcat(pcBuffer, pcSwap);
 	strcat(pcBuffer, ":");
 
 	// minutos
-	itoa(xTime.Minutes, pcSwap, HEX);
+	itoa(xTime.Minutes, pcSwap, DEC);
 	strcat(pcBuffer, pcSwap);
 	strcat(pcBuffer, ":");
 
 	// segundos
-	itoa(xTime.Seconds, pcSwap, HEX);
+	itoa(xTime.Seconds, pcSwap, DEC);
 	strcat(pcBuffer, pcSwap);
 	strcat(pcBuffer, "");
+
+	xSemaphoreGive(xSemaphoreRTC);
 
 	return pcBuffer;
 }
@@ -177,8 +198,10 @@ CCHR *rtc_pcBuildTimeStamp(const RTC_DateTypeDef xDate, const RTC_TimeTypeDef xT
  * @return pcBuffer com a data montada
  */
 CCHR *rtc_pcGetTimeStamp(char *pcBuffer){
-	 return rtc_pcBuildTimeStamp( rtc_xGetData(), rtc_xGetTime(), pcBuffer);
+	 return rtc_pcBuildTimeStamp( rtc_xGetDate(), rtc_xGetTime(), pcBuffer);
 }
+
+
 
 
 /*########################################################################################################################################################*/

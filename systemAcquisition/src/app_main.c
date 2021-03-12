@@ -35,29 +35,19 @@
 #include <FreeRTOS/Drivers/adc.h>
 #include <FreeRTOS/Drivers/rtc.h>
 #include <FreeRTOS/Drivers/timer.h>
+#include <FreeRTOS/Drivers/watchDogs.h>
 
 #include <lib/textProtocol/protocol.h>
 
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-TaskHandle_t TaskHandleMainApp = NULL;
+CCHR pcStartedSystem[]	= "Started System";
 
 /* Private Functions ---------------------------------------------------------*/
-void vMain_app(void * pvParameters);
-
-/**
- * @brief Inicializar tasks da aplicação, essa função é execurada dendro da main.c no FreeRTOS 
- * @param None
- */
-extern void vStartupSystem(void) {
-	/* iniciar task principal */
-	if(xTaskCreate( vMain_app, "app_main", configMINIMAL_STACK_SIZE*4, NULL, mainSET_PRIORITY, &TaskHandleMainApp) == pdFAIL){
-		NVIC_SystemReset();		// RESET MCU
-	} else {
-		/* iniciar putras tasks */
-	}
-}
+void main_vApp(void * pvParameters);
+void main_vInitTasks(void);
+void main_vSetup(void);
 
 
 /*########################################################################################################################################################*/
@@ -67,63 +57,29 @@ extern void vStartupSystem(void) {
 /*########################################################################################################################################################*/
 
 
-
 /**
- * @brief 
- * @param pvParameters, ponteiro do parametro passado na criação da task não nao utilizado nesta 
- * função.
+ * @brief inicia configurações básicas da aplicação
+ * @param none 
+ * 
  */
-void vMain_app(void * pvParameters){
-	(void) pvParameters;
+void main_vSetup(void){
+	rtc_vInit();
 
 	gpio_vInitAll();
 	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
 
 	usart_vSetup(ttyUSART1, 9600);
-	
-
-	// usart_vSendStrLn(ttyUSART1, "start get sample", strlen("start get sample"));
-	// adc1_vInitGetSample( 1000, 65535 );
-	// vTaskDelay(_10S);
-
-	// usart_vSendStrLn(ttyUSART1, "stop get sample", strlen("stop get sample"));
-	// adc1_vDeInitGetSample();
-	// vTaskDelay(_3S);
-	
-
-	// usart_vSendStrLn(ttyUSART1, "start timer it", strlen("start timer it"));
-	// tim3_vStartIT( 500, 65535 );
-	// vTaskDelay(_10S);
-	// usart_vSendStrLn(ttyUSART1, "stop timer it", strlen("stop timer it"));
-	// tim3_vDeinit();
-	// vTaskDelay(_3S);
-
-	rtc_vInit();
-	
-	usart_vSendStrLn(ttyUSART1, "alpacas", strlen("alpacas"));
-
-
-	// CCHR *pcUsart	= usart_pcGetBuffer(ttyUSART1);
-	char pcValue[100] = { "" };
-
-	while (TRUE) {		
-		
-		gpio_vToggle(GPIOC13);
-
-		usart_vSendStrLn(ttyUSART1, rtc_pcGetTimeStamp(pcCleanStr(pcValue)), strlen(pcValue));
-		
-		// itoa(adc1_iGetFirstValue(ADC1_PA7), pcValue, DEC);
-		// usart_vSendStrLn(ttyUSART1, pcValue, strlen(pcValue));
-		vTaskDelay(_1S);
-
-
-		// if(strstr(pcUsart, "\r\n")){
-		// 	usart_vSendStr(ttyUSART1, pcUsart, strlen(pcUsart));
-		// 	usart_vCleanBuffer(ttyUSART1);
-		// }
-	}
+	usart_vSendStrLn(ttyUSART1, pcStartedSystem, strlen(pcStartedSystem));
 }
 
+/**
+ * @brief inicia outras tasks
+ * @param none 
+ * 
+ */
+void main_vInitTasks(void) {
+	iwdg_vInit();
+}
 
 
 /**
@@ -145,4 +101,42 @@ void adc1_vDMA1Ch1Handler( BaseType_t *const pxHigherPriorityTaskWoken ){
  */
 void tim3_vHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
 	(void) pxHigherPriorityTaskWoken;
+}
+
+
+
+/**
+ * @brief 
+ * @param pvParameters, ponteiro do parametro passado na criação da task não nao utilizado nesta 
+ * função.
+ */
+void main_vApp(void * pvParameters){
+	(void) pvParameters;
+
+	main_vSetup();
+	main_vInitTasks();
+
+	vTaskDelay(_1S);
+
+	char pcValue[100] = { "" };
+
+	while (TRUE) {
+		iwdg_vStartConter(iwdgVC_0);	
+		gpio_vToggle(GPIOC13);
+		usart_vSendStrLn(ttyUSART1, rtc_pcGetTimeStamp(pcCleanStr(pcValue)), strlen(pcValue));
+		vTaskDelay(_1S);
+		iwdg_vStopConter(iwdgVC_0);
+	}
+}
+
+
+/**
+ * @brief inicia a task main da aplicação, essa função é execurada dendro da main.c no FreeRTOS 
+ * @param None
+ */
+extern void vStartupSystem(void) {
+	/* iniciar task principal */
+	if(xTaskCreate( main_vApp, "app_main", configMINIMAL_STACK_SIZE*4, NULL, mainSET_PRIORITY, NULL) == pdFAIL){
+		NVIC_SystemReset();		// RESET MCU
+	}
 }

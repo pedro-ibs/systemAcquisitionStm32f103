@@ -11,7 +11,8 @@
  * TODO: Licence
  * ########################################################
  *
- * TODO: documentation or resume or Abstract
+ * Controla a periferia de hardware RCT. essa biblioteca
+ * pode gerar uma data como 20/7/69-23:56:19
  *
  */
 
@@ -27,12 +28,12 @@
 void rtc_vInit(void);
 
 TickType_t rtc_xTaskGetSeconds( void );
+RTC_TimeTypeDef rtc_xGetTime( void );
+RTC_DateTypeDef rtc_xGetDate( void );
 
-RTC_TimeTypeDef rtc_xGetTime(void);
-RTC_DateTypeDef rtc_xGetData(void);
+CCHR *rtc_pcBuildTimeStamp( const RTC_DateTypeDef xDate, const RTC_TimeTypeDef xTime, char *pcBuffer );
+CCHR *rtc_pcGetTimeStamp( char *pcBuffer );
 
-CCHR *rtc_pcBuildTimeStamp(const RTC_DateTypeDef xDate, const RTC_TimeTypeDef xTime, char *pcBuffer);
-CCHR *rtc_pcGetTimeStamp(char *pcBuffer);
 
 #endif /* rtc_H_ */
 
