@@ -440,6 +440,8 @@ void xPortSysTickHandler( void )
 		}
 	}
 	portENABLE_INTERRUPTS();
+
+	HAL_IncTick();
 }
 /*-----------------------------------------------------------*/
 

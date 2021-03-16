@@ -1,7 +1,7 @@
 /*
- * uart.h
+ * usart.h
  *
- *  Created at:		23/02/2021 16:50:19
+ *  Created at:		16/03/2021 11:34:54
  *      Author:		Pedro Igor B. S.
  *	Email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
@@ -25,6 +25,8 @@
  * -------------------------------------------------------------------
  * ########################################################
  *
+ * 
+ * ------------------------ USART_IT ------------------------
  * driver serial para a comunicação serial RS232, esse driver
  * faz uso das interrupções USART_IT_TXE e USART_IT_RXNE para
  * transmitir e ressaber dados. Alem disso há recursos de queue
@@ -35,39 +37,42 @@
  * 
  * para mais detalhes veja as descrições das funções 
  *
+ * 
+ * ------------------------ USART_DMA ------------------------
+ *
  */
-
 
 /* Includes ------------------------------------------------------------------*/
 #include <core/includes.h>
 #include <FreeRTOS/include/FreeRTOSConfig.h>
 
-#ifndef uart_H_
-#define uart_H_
+#ifndef usart_it_or_dma_H_
+#define usart_it_or_dma_H_
 
 /* macro ---------------------------------------------------------------------*/
 
 /**
- * Evite sar valores grandes, recomendo
- * valores iguais ou menores que 1024 bytes
  * 
- * Evite tambem um valor para TXD muito pequeno
- * pode ocasionar pausa muito frequentes para a
- * task
+ * Configure de acordo com a forma que deseje que a usart funcione
  * 
- * O temanho de RXD deve ser coerente com a aplicação
- * levando em conta o tamanho maximo das mensagens
- * enviadas para o microcontrolador 
+ * 
+ */
+#define USART_IT		( 1 )
+#define USART_DMA		( 2 )
+#define USART_USE		( USART_IT )
+
+
+/**
+ * TODO: coc
  */
 #define SIZE_BUFFER_TXD		( 80 )
 #define SIZE_BUFFER_RXD		( 140 )
+
 
 /*
  * tempo limite para enviar dados com a função 
  * HAL_UART_Transmit
  * 
- * TODO: NOTA acredito que esse timeout da função
- * não funcione com o freertos ativo
  */
 #define UART_TRANSMIT_TIMEOUT	( 1000 )
 
@@ -79,6 +84,8 @@
 #define NVIC_PRIORITY_USART	( 0 )
 #define NVIC_SUBPRIORITY_USART	( 0 )
 
+
+
 /* Definition ----------------------------------------------------------------*/
 typedef enum{
 	ttyUSART1 = 0,
@@ -87,14 +94,30 @@ typedef enum{
 	ttyNUM
 }xTTY;
 
+typedef enum{
+	usart_0k3bps	= 300,
+	usart_0k6bps	= 600,
+	usart_1k2bps	= 1200,
+	usart_2k4bps	= 2400,
+	usart_4k8bps	= 4800,
+	usart_9k6bps	= 9600,
+	usart_14k4bps	= 14400,
+	usart_19k2bps	= 19200,
+	usart_38k4bps	= 38400,
+	usart_57k6bps	= 57600,
+	usart_115k2bps	= 115200,
+	usart_230k4bps	= 230400,
+	usart_250k0bps	= 250000,
+	usart_460k8bps	= 460800,
+	usart_500k0bps	= 500000,
+	usart_1M0bps	= 1000000,
+}xBaudRate;
 
-void usart_vSetup(xTTY xtty, cu32 cuBaudRate);
+
+void usart_vSetup(xTTY xtty, const xBaudRate cuBaudRate);
 
 void usart_vTakeAccess(const xTTY xtty);
 void usart_vGiveAccess(const xTTY xtty);
-void usart_vStopIT_RXD(const xTTY xtty);
-void usart_vStartIT_RXD(const xTTY xtty);
-
 
 void usart_vCleanBuffer(const xTTY xtty);
 int usart_iSizeBuffer(const xTTY xtty);
@@ -109,5 +132,19 @@ void usart_vSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
 void usart_vSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
 
 
+#if(USART_USE == USART_IT)
 
-#endif /* uart_H_ */
+	void usart_vStopIT_RXD(const xTTY xtty);
+	void usart_vStartIT_RXD(const xTTY xtty);
+
+	void usart_vSendChrFromISR(const xTTY xtty, CCHR ccChr, BaseType_t *const pxHigherPriorityTaskWoken);
+	void usart_vSendStrFromISR(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize, BaseType_t *const pxHigherPriorityTaskWoken);
+	void usart_vSendStrLnFromISR(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize, BaseType_t *const pxHigherPriorityTaskWoken);
+
+#elif(USART_USE == USART_DMA)
+
+
+#endif
+
+
+#endif /* usart_it_or_dma_H_ */

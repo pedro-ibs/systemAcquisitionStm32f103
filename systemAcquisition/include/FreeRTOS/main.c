@@ -43,7 +43,7 @@
 #include <FreeRTOS/include/queue.h>
 #include <FreeRTOS/include/portable.h>
 #include <FreeRTOS/Drivers/gpio.h>
-#include <FreeRTOS/Drivers/uart.h>
+#include <FreeRTOS/Drivers/usart.h>
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/

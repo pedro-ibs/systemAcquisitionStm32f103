@@ -45,7 +45,7 @@
 #include <FreeRTOS/include/portable.h>
 
 #include <FreeRTOS/Drivers/gpio.h>
-#include <FreeRTOS/Drivers/uart.h>
+#include <FreeRTOS/Drivers/usart.h>
 #include <FreeRTOS/Drivers/adc.h>
 #include <FreeRTOS/Drivers/rtc.h>
 #include <FreeRTOS/Drivers/timer.h>
@@ -56,13 +56,12 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-CCHR pcStartedSystem[]	= "Started System";
 
 /* Private Functions ---------------------------------------------------------*/
 void main_vApp(void * pvParameters);
 void main_vInitTasks(void);
 void main_vSetup(void);
-
+void main_vLoop(void);
 
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
@@ -78,12 +77,9 @@ void main_vSetup(void);
  */
 void main_vSetup(void){
 	rtc_vInit();
-
 	gpio_vInitAll();
 	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
-
-	usart_vSetup(ttyUSART1, 9600);
-	usart_vSendStrLn(ttyUSART1, pcStartedSystem, strlen(pcStartedSystem));
+	gpio_vMode(GPIOC14, GPIO_MODE_OUTPUT_PP, GPIO_PULLUP);
 }
 
 /**
@@ -92,8 +88,16 @@ void main_vSetup(void){
  * 
  */
 void main_vInitTasks(void) {
-	iwdg_vInit();
 }
+
+/**
+ * @brief
+ * @param
+ * 
+ */
+void main_vLoop(void){
+}
+
 
 
 /**
@@ -126,21 +130,9 @@ void tim3_vHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
  */
 void main_vApp(void * pvParameters){
 	(void) pvParameters;
-
 	main_vSetup();
 	main_vInitTasks();
-
-	vTaskDelay(_1S);
-
-	char pcValue[100] = { "" };
-
-	while (TRUE) {
-		iwdg_vStartConter(iwdgVC_0);	
-		gpio_vToggle(GPIOC13);
-		usart_vSendStrLn(ttyUSART1, rtc_pcGetTimeStamp(pcCleanStr(pcValue)), strlen(pcValue));
-		vTaskDelay(_1S);
-		iwdg_vStopConter(iwdgVC_0);
-	}
+	while (TRUE) { main_vLoop(); }
 }
 
 

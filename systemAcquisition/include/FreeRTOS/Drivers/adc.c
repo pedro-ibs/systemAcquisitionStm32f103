@@ -97,7 +97,6 @@
 #include <FreeRTOS/Drivers/timer.h> 
 
 /* Private macro -------------------------------------------------------------*/
-#define ADC1_CHANNEL_DISABLE		((u32)0x00000000U)
 
 /* Private variables ---------------------------------------------------------*/
 typedef struct {
@@ -233,6 +232,35 @@ int adc1_iGetFirstValue(const xAdcChannel cuChannel){
 	return uSwap;
 }
 
+
+
+/**
+ *  
+ * @brief copia o buffer do adc para outro
+ * @note utilize essa função dentro de acd1_vBufferDoneHandler para copar
+ * e trabalhe com o buffer copiado fora dela
+ * @param puSaveAt onde o buffer do adc1 será salvo
+ * @return (u16*): retorna puSaveAt
+ * 
+ */
+u16 *adc1_puCopyBuffer( u16 *puSaveAt ){
+	memcpy (puSaveAt, puAdc1Buffer, ADC1_SIZE_BUFFER);
+	return puSaveAt;
+}
+
+
+
+/**
+ * @brief retorne o endereço do buffer de aquisição
+ * do adc1
+ * @param none
+ * @return (const u16*)
+ */
+const u16 *adc1_puGetBuffer(void){
+	return (const u16*)puAdc1Buffer;
+}
+
+
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
@@ -302,7 +330,7 @@ void adc1_vDMA1(void){
 	xDmaAdc1.Init.PeriphDataAlignment	= DMA_PDATAALIGN_HALFWORD;
 	xDmaAdc1.Init.MemDataAlignment		= DMA_MDATAALIGN_HALFWORD;
 	xDmaAdc1.Init.Mode			= DMA_CIRCULAR;
-	xDmaAdc1.Init.Priority			= DMA_PRIORITY_LOW;
+	xDmaAdc1.Init.Priority			= DMA_PRIORITY_VERY_HIGH;
 	
 	if (HAL_DMA_Init(&xDmaAdc1) != HAL_OK) {
 		Error_Handler();

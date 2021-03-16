@@ -1,5 +1,5 @@
 /*
- * uart.c
+ * usart_it.c
  *
  *  Created at:		23/02/2021 16:49:47
  *      Author:		Pedro Igor B. S.
@@ -53,7 +53,10 @@
 #include <FreeRTOS/include/queue.h>
 #include <FreeRTOS/include/semphr.h>
 #include <FreeRTOS/include/portable.h>
-#include <FreeRTOS/Drivers/uart.h>
+#include <FreeRTOS/Drivers/usart.h>
+
+#if(USART_USE == USART_IT)
+
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -89,7 +92,7 @@ void usart_vIT(const xTTY xtty,BaseType_t *const pxHigherPriorityTaskWoken);
  * xtty seja invalido a função não será executada
  * @param cuBaudRate, velocidade da porta serial.
  */
-void usart_vSetup(xTTY xtty, cu32 cuBaudRate){	
+void usart_vSetup(xTTY xtty, const xBaudRate cuBaudRate){	
 	if(xtty >= ttyNUM) return;
 
 	usart_vInitVars(xtty);
@@ -310,6 +313,32 @@ void usart_vSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
 
 
 
+void usart_vSendChrFromISR(const xTTY xtty, CCHR ccChr, BaseType_t *const pxHigherPriorityTaskWoken){
+	while( xQueueSendFromISR( xUsart[ xtty ].xTXD, &ccChr, pxHigherPriorityTaskWoken ) != pdPASS ){
+		/* casso a queue esteja cheia espere espere esvaziar */
+		__HAL_USART_ENABLE_IT(&xUsart[xtty].xHandle, UART_IT_TXE);
+		vTaskDelay( _10MS );
+	}
+	__HAL_USART_ENABLE_IT(&xUsart[xtty].xHandle, UART_IT_TXE);
+};
+
+void usart_vSendStrFromISR(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize, BaseType_t *const pxHigherPriorityTaskWoken){
+	for(size_t idx = 0; idx<cuSize; idx++){
+		usart_vSendChrFromISR(xtty, pcBuffer[idx], pxHigherPriorityTaskWoken);
+	}
+}
+
+/**
+ * 
+ * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS para o controle
+ * de troca de contexto em interruições.  
+ */
+void usart_vSendStrLnFromISR(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize, BaseType_t *const pxHigherPriorityTaskWoken){
+	usart_vSendStrFromISR(xtty, pcBuffer, cuSize, pxHigherPriorityTaskWoken);
+	usart_vSendStrFromISR(xtty, "\r\n", 2, pxHigherPriorityTaskWoken);
+}
+
+
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
@@ -508,3 +537,5 @@ void USART3_IRQHandler(void){
 	usart_vIT(ttyUSART3, &xHigherPriorityTaskWoken);
 	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
+
+#endif

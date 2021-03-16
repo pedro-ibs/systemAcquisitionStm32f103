@@ -34,12 +34,15 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <core/includes.h>
-#include <FreeRTOS/include/FreeRTOS.h>
+#include <FreeRTOS/include/FreeRTOSConfig.h>
 
 #ifndef timer_3_H_
 #define timer_3_H_
 
 /* macro ---------------------------------------------------------------------*/
+#define FREG_TO_COUNTER(FREG, PRES)	( ( (congigCPU_CLOCK_HZ_VALUE/PRES) / (FREG*2) ) )
+
+
 /* Definition ----------------------------------------------------------------*/
 
 

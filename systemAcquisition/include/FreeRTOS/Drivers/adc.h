@@ -82,6 +82,7 @@
 #define adc_H_
 
 /* macro ---------------------------------------------------------------------*/
+#define ADC1_CHANNEL_DISABLE		((u32)0x00000000U)
 
 /**
  * utilise essas macros para configurar os RANK de cada canal do adc1. 
@@ -168,7 +169,8 @@ void adc1_vInitGetSample(cu32 uPrescaler, cu32 uPeriod);
 void adc1_vDeInitGetSample(void);
 int adc1_iGetFirstValue(const xAdcChannel cuChannel);
 
-
+u16 *adc1_puCopyBuffer( u16 *puSaveAt );
+const u16 *adc1_puGetBuffer(void);
 
 /**
  * @brief Função dentro da interrupção DMA1_Channel1_IRQHandler
