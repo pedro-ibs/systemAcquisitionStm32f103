@@ -94,6 +94,7 @@ typedef enum{
 	ttyNUM
 }xTTY;
 
+
 typedef enum{
 	usart_0k3bps	= 300,
 	usart_0k6bps	= 600,
@@ -114,7 +115,9 @@ typedef enum{
 }xBaudRate;
 
 
-void usart_vSetup(xTTY xtty, const xBaudRate cuBaudRate);
+void usart_vInit(UART_HandleTypeDef *xHandle, const xTTY xtty,  xBaudRate cuBaudRate);
+
+void usart_vSetup(const xTTY xtty, const xBaudRate cuBaudRate);
 
 void usart_vTakeAccess(const xTTY xtty);
 void usart_vGiveAccess(const xTTY xtty);
@@ -132,17 +135,11 @@ void usart_vSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
 void usart_vSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
 
 
+
+
 #if(USART_USE == USART_IT)
 
-	void usart_vStopIT_RXD(const xTTY xtty);
-	void usart_vStartIT_RXD(const xTTY xtty);
-
-	void usart_vSendChrFromISR(const xTTY xtty, CCHR ccChr, BaseType_t *const pxHigherPriorityTaskWoken);
-	void usart_vSendStrFromISR(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize, BaseType_t *const pxHigherPriorityTaskWoken);
-	void usart_vSendStrLnFromISR(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize, BaseType_t *const pxHigherPriorityTaskWoken);
-
 #elif(USART_USE == USART_DMA)
-
 
 #endif
 

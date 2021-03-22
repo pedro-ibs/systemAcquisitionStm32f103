@@ -110,7 +110,6 @@ void iwdg_vTask(void * pvParameters);
 /**
  * @brief iniciar temporisador watch dogs
  * @param none
- * 
  */
 void iwdg_vInit(void){
 	if((xQueueIwdg == NULL) ){
@@ -120,7 +119,6 @@ void iwdg_vInit(void){
 
 
 /**
- * 
  * @brief inicia o contador virtual do iwdg
  * @param cuVirtualConter: indice do contador virtual
  */

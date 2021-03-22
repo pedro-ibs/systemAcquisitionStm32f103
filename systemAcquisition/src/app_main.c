@@ -50,12 +50,15 @@
 #include <FreeRTOS/Drivers/rtc.h>
 #include <FreeRTOS/Drivers/timer.h>
 #include <FreeRTOS/Drivers/watchDogs.h>
+#include <FreeRTOS/Drivers/flash.h>
+
 
 #include <lib/textProtocol/protocol.h>
 
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+char alpacas[] = 	"aplacas\r\n";
 
 /* Private Functions ---------------------------------------------------------*/
 void main_vApp(void * pvParameters);
@@ -80,6 +83,22 @@ void main_vSetup(void){
 	gpio_vInitAll();
 	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
 	gpio_vMode(GPIOC14, GPIO_MODE_OUTPUT_PP, GPIO_PULLUP);
+
+
+	usart_vSetup(ttyUSART1, usart_9k6bps);
+	usart_vSendStrLn(ttyUSART1, "stared system", strlen("stared system"));
+
+
+
+	flash_vInit();
+	flash_vTakeAsses();
+
+	// flash_vErase();
+	// flash_vWriteBlockToBuffer((const u8*)"123456_78\r\n", strlen("123456_78\r\n"));
+	// flash_vBufferToFlash();	
+	flash_vFlashToBuffer();
+	
+	flash_vGiveAsses();
 }
 
 /**
@@ -96,6 +115,14 @@ void main_vInitTasks(void) {
  * 
  */
 void main_vLoop(void){
+
+	flash_vTakeAsses();
+	usart_vSendStr(ttyUSART1,  (CCHR*)flash_puGetBuffer(), PAGESIZE);
+	flash_vGiveAsses();
+	
+
+	usart_vSendStr(ttyUSART1, alpacas, strlen(alpacas));
+	vTaskDelay(_1S);
 }
 
 
