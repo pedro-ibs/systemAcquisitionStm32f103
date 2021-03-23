@@ -58,13 +58,17 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-char alpacas[] = 	"aplacas\r\n";
+static TaskHandle_t xMainAppHandle = NULL;
 
 /* Private Functions ---------------------------------------------------------*/
 void main_vApp(void * pvParameters);
 void main_vInitTasks(void);
 void main_vSetup(void);
 void main_vLoop(void);
+
+
+
+void blink(void * pvParameters);
 
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
@@ -79,26 +83,7 @@ void main_vLoop(void);
  * 
  */
 void main_vSetup(void){
-	rtc_vInit();
-	gpio_vInitAll();
-	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
-	gpio_vMode(GPIOC14, GPIO_MODE_OUTPUT_PP, GPIO_PULLUP);
 
-
-	usart_vSetup(ttyUSART1, usart_9k6bps);
-	usart_vSendStrLn(ttyUSART1, "stared system", strlen("stared system"));
-
-
-
-	flash_vInit();
-	flash_vTakeAsses();
-
-	// flash_vErase();
-	// flash_vWriteBlockToBuffer((const u8*)"123456_78\r\n", strlen("123456_78\r\n"));
-	// flash_vBufferToFlash();	
-	flash_vFlashToBuffer();
-	
-	flash_vGiveAsses();
 }
 
 /**
@@ -107,6 +92,7 @@ void main_vSetup(void){
  * 
  */
 void main_vInitTasks(void) {
+
 }
 
 /**
@@ -116,12 +102,6 @@ void main_vInitTasks(void) {
  */
 void main_vLoop(void){
 
-	flash_vTakeAsses();
-	usart_vSendStr(ttyUSART1,  (CCHR*)flash_puGetBuffer(), PAGESIZE);
-	flash_vGiveAsses();
-	
-
-	usart_vSendStr(ttyUSART1, alpacas, strlen(alpacas));
 	vTaskDelay(_1S);
 }
 
@@ -160,6 +140,7 @@ void main_vApp(void * pvParameters){
 	main_vSetup();
 	main_vInitTasks();
 	while (TRUE) { main_vLoop(); }
+	return;
 }
 
 
@@ -169,7 +150,7 @@ void main_vApp(void * pvParameters){
  */
 extern void vStartupSystem(void) {
 	/* iniciar task principal */
-	if(xTaskCreate( main_vApp, "app_main", configMINIMAL_STACK_SIZE*4, NULL, mainSET_PRIORITY, NULL) == pdFAIL){
+	if(xTaskCreate( main_vApp, "app_main", configMINIMAL_STACK_SIZE*4, NULL, mainSET_PRIORITY, &xMainAppHandle) == pdFAIL){
 		NVIC_SystemReset();		// RESET MCU
-	}
+	} 
 }
