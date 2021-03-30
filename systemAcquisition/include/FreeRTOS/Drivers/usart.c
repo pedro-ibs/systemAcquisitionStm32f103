@@ -145,7 +145,7 @@ void usart_vAtomicSendChr(const xTTY xtty, CCHR ccChr){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vAtomicSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vAtomicSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	if(xUH[xtty].pxHandle == NULL)	return;
 	if(pcBuffer == NULL)		return;
 	while ( HAL_UART_GetState(xUH[xtty].pxHandle) != HAL_UART_STATE_READY);
@@ -161,11 +161,30 @@ void usart_vAtomicSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vAtomicSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
-	usart_vAtomicSendStr(xtty, pcBuffer, cuSize);
-	usart_vAtomicSendStr(xtty, "\r\n", 2);
+void usart_vAtomicSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+	usart_vAtomicSendBlk(xtty, pcBuffer, cuSize);
+	usart_vAtomicSendBlk(xtty, "\r\n", 2);
 }
 
+/**
+ * @brief envia uma sting 
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada
+ * @param pcString, buffer a ser enviado 
+ */
+void usart_vAtomicSendStr(const xTTY xtty, CCHR *pcString){
+	usart_vAtomicSendBlk(xtty, pcString, strlen(pcString));
+}
+
+/**
+ * @brief envia uma sting + "\r\n"
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada
+ * @param pcString, buffer a ser enviado 
+ */
+void usart_vAtomicSendStrLn(const xTTY xtty, CCHR *pcString){
+	usart_vAtomicSendBlkLn(xtty, pcString, strlen(pcString));
+}
 
 
 

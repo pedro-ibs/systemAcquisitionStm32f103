@@ -103,7 +103,7 @@ int main( void ) {
 void vApplicationIdleHook(void){
 	// TODO: Put the processor into a low power state.
 	const char msg[] = "\r\nvApplicationIdleHookz";
-	usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
+	usart_vAtomicSendBlkLn(ttyUSART1, msg, strlen(msg));
 
 }
 
@@ -137,8 +137,8 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName){
 	offending task. */
 	vTaskSuspendAll();
 	const char msg[] = "\r\nStack Overflow in task: ";
-	usart_vAtomicSendStr(ttyUSART1, msg, strlen(msg));
-	usart_vAtomicSendStrLn(ttyUSART1, (char*)pcTaskName, strlen((char*)pcTaskName));
+	usart_vAtomicSendBlk(ttyUSART1, msg, strlen(msg));
+	usart_vAtomicSendBlkLn(ttyUSART1, (char*)pcTaskName, strlen((char*)pcTaskName));
 	xTaskResumeAll();
 
 	( void ) xTask;
@@ -170,7 +170,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName){
 void vApplicationTickHook(void){
 	// TODO: It is a place to add timer processing.
 	const char msg[] = "\r\nvApplicationTickHook";
-	usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
+	usart_vAtomicSendBlkLn(ttyUSART1, msg, strlen(msg));
 }
 
 /*==================================================================================================
@@ -201,9 +201,9 @@ void vApplicationMallocFailedHook(void){
 	for(u8 idx=0; idx<10; idx++) msg[idx] = 0x00;
 
 
-	usart_vAtomicSendStr(ttyUSART1, msg2, strlen(msg2));
+	usart_vAtomicSendBlk(ttyUSART1, msg2, strlen(msg2));
 	itoa(xPortGetFreeHeapSize() , msg, 10);
-	usart_vAtomicSendStrLn(ttyUSART1, msg, strlen(msg));
+	usart_vAtomicSendBlkLn(ttyUSART1, msg, strlen(msg));
 }
 
 

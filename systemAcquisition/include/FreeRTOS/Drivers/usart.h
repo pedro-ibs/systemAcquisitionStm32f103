@@ -127,13 +127,17 @@ int usart_iSizeBuffer(const xTTY xtty);
 CCHR *usart_pcGetBuffer(xTTY xtty);
 
 void usart_vAtomicSendChr(const xTTY xtty, CCHR ccChr);
-void usart_vAtomicSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
-void usart_vAtomicSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vAtomicSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vAtomicSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vAtomicSendStr(const xTTY xtty, CCHR *pcString);
+void usart_vAtomicSendStrLn(const xTTY xtty, CCHR *pcString);
+
 
 void usart_vSendChr(const xTTY xtty, CCHR ccChr);
-void usart_vSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
-void usart_vSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
-
+void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vSendStr(const xTTY xtty, CCHR *pcString);
+void usart_vSendStrLn(const xTTY xtty, CCHR *pcString);
 
 
 

@@ -198,7 +198,7 @@ void usart_vSendChr(const xTTY xtty, CCHR ccChr){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	if(usart_bCheckError(xtty))	return;
 	if(pcBuffer == NULL)		return;
 	
@@ -219,9 +219,35 @@ void usart_vSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
-	usart_vSendStr(xtty, pcBuffer, cuSize);
-	usart_vSendStr(xtty, "\r\n", 2);
+void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+	usart_vSendBlk(xtty, pcBuffer, cuSize);
+	usart_vSendBlk(xtty, "\r\n", 2);
+}
+
+
+/**
+ * @brief envia uma string. Essa função utilizam o periferio uart junto
+ * da interrupção USART_FLAG_TXE. Esse envio ocorre por por meio de uma queue,
+ * que por meio dessa é populada enquanto a interrupção envia os dado.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada
+ * @param pcString, string a ser enviada 
+ */
+void usart_vSendStr(const xTTY xtty, CCHR *pcString){
+	usart_vSendBlk(xtty, pcString, strlen(pcString));
+}
+
+/**
+ * @brief envia uma string, ao final do envio de pcString
+ * a função irá enviar "\r\n". Essa função utilizam o periferio uart junto
+ * da interrupção USART_FLAG_TXE. Esse envio ocorre por por meio de uma queue,
+ * que por meio dessa é populada enquanto a interrupção envia os dado.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada
+ * @param pcString, string a ser enviada 
+ */
+void usart_vSendStrLn(const xTTY xtty, CCHR *pcString){
+	usart_vSendBlk(xtty, pcString, strlen(pcString));
 }
 
 

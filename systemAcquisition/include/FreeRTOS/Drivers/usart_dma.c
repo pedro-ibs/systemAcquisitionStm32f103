@@ -148,7 +148,7 @@ void usart_vSendChr(const xTTY xtty, CCHR ccChr){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	while ( HAL_UART_GetState(&xUsartDMA[xtty].xHandle) != HAL_UART_STATE_READY);
 	HAL_UART_Transmit_DMA(&xUsartDMA[xtty].xHandle, (u8*)pcBuffer, cuSize);
 }
@@ -165,9 +165,9 @@ void usart_vSendStr(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vSendStrLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
-	usart_vSendStr(xtty, pcBuffer, cuSize);
-	usart_vSendStr(xtty, "\r\n", 2);
+void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+	usart_vSendBlk(xtty, pcBuffer, cuSize);
+	usart_vSendBlk(xtty, "\r\n", 2);
 }
 
 
