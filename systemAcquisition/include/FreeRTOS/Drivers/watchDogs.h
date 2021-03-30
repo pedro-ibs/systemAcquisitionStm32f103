@@ -1,9 +1,9 @@
-/*
+/**
  *  watchDogs.h
  *
- *  Created at:		11/03/2021 09:20:57
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	11/03/2021 09:20:57
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *

@@ -1,9 +1,9 @@
-/*
+/**
  * usart.c
  *
- *  Created at:		18/03/2021 10:17:28
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	18/03/2021 10:17:28
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *

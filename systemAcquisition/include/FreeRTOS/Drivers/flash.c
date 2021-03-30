@@ -1,9 +1,9 @@
 /*
  *  EEPROMemulation.c
  *
- *  Created at:		19/03/2021 12:21:35
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	19/03/2021 12:21:35
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *

@@ -1,9 +1,9 @@
 /*
  * protocol.h
  *
- *  Created at:		11/03/2021 12:45:55
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	11/03/2021 12:45:55
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *

@@ -1,9 +1,9 @@
-/*
+/**
  * usart_dma.c
  *
- *  Created at:		16/03/2021 11:28:05
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	16/03/2021 11:28:05
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *

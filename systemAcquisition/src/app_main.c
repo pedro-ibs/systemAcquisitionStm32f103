@@ -1,9 +1,9 @@
 /*
  * main.c
  *
- *  Created at:		22/02/2021 11:54:32
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	22/02/2021 11:54:32
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *

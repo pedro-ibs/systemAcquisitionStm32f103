@@ -1,9 +1,9 @@
-/*
+/**
  * rtc.h
  *
- *  Created at:		03/03/2021 16:09:39
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	03/03/2021 16:09:39
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *

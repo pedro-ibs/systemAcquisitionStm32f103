@@ -1,9 +1,9 @@
-/*
+/**
  * gpio.c
  *
- *  Created at:		23/02/2021 09:07:00
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	23/02/2021 09:07:00
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *

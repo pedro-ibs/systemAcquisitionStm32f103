@@ -1,9 +1,9 @@
-/*
+/**
  * adc.h
  *
- *  Created at:		26/02/2021 10:53:47
- *      Author:		Pedro Igor B. S.
- *	Email:		pibscontato@gmail.com
+ *  @date Created at:	26/02/2021 10:53:47
+ *	@author:	Pedro Igor B. S.
+ *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
  * 	tabSize:	8
  *
