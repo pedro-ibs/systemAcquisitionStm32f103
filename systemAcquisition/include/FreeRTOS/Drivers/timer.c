@@ -69,7 +69,11 @@ void tim3_vInitVar(void);
  */
 void tim3_vStartAdc1Trigger(cu32 uPrescaler, cu32 uPeriod) {
 
+	tim3_vDeinit();
+
 	tim3_vInitVar();
+
+
 	xSemaphoreTake(xTim3Semaphore, portMAX_DELAY);	
 
 	__HAL_RCC_TIM3_CLK_ENABLE();
@@ -110,9 +114,6 @@ void tim3_vStartAdc1Trigger(cu32 uPrescaler, cu32 uPeriod) {
 		Error_Handler();
 	}
 	
-	HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(TIM3_IRQn);
-
 	HAL_TIM_Base_Start_IT(&xTim3);
 	xSemaphoreGive(xTim3Semaphore);
 
@@ -126,6 +127,8 @@ void tim3_vStartAdc1Trigger(cu32 uPrescaler, cu32 uPeriod) {
  */
 void tim3_vStartIT(cu32 uPrescaler, cu32 uPeriod) {
 
+	tim3_vDeinit();
+	
 	tim3_vInitVar();
 
 	xSemaphoreTake(xTim3Semaphore, portMAX_DELAY);	
@@ -156,7 +159,7 @@ void tim3_vStartIT(cu32 uPrescaler, cu32 uPeriod) {
 		Error_Handler();
 	}
 
-	HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
+	HAL_NVIC_SetPriority(TIM3_IRQn, TIM3_NVIC_PRIORITY, TIM3_NVIC_SUBPRIORITY);
 	HAL_NVIC_EnableIRQ(TIM3_IRQn);
 
 	HAL_TIM_Base_Start_IT(&xTim3);
@@ -172,6 +175,11 @@ void tim3_vStartIT(cu32 uPrescaler, cu32 uPeriod) {
  * 
  */
 void tim3_vDeinit( void ){
+
+	if(xTim3Semaphore == NULL){
+		return;
+	}
+
 	xSemaphoreTake(xTim3Semaphore, portMAX_DELAY);
 	__HAL_RCC_TIM3_CLK_DISABLE();
 	HAL_TIM_Base_Stop_IT(&xTim3);
@@ -181,11 +189,6 @@ void tim3_vDeinit( void ){
 
 
 }
-
-
-
-
-
 
 
 /*########################################################################################################################################################*/

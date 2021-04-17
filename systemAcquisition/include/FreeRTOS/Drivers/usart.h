@@ -1,4 +1,4 @@
-/*
+/**
  * usart.h
  *
  *  @date Created at:	16/03/2021 11:34:54
@@ -69,7 +69,7 @@
 #define SIZE_BUFFER_RXD		( 140 )
 
 
-/*
+/**
  * tempo limite para enviar dados com a função 
  * HAL_UART_Transmit
  * 
@@ -81,8 +81,8 @@
  * prioridades das interruições de todos 
  * os perifericos usart
  */
-#define NVIC_PRIORITY_USART	( 0 )
-#define NVIC_SUBPRIORITY_USART	( 0 )
+#define USART_NVIC_PRIORITY	( 0 )
+#define USART_NVIC_SUBPRIORITY	( 0 )
 
 
 

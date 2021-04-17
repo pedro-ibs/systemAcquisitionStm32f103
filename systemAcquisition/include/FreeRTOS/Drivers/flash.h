@@ -54,9 +54,9 @@
  * utilizar uma ou um grupo de funções deste driver deve ser usado as funções 
  * de controle de acesso:
  * 
- * flash_vTakeAsses();
+ * flash_vTakeAccesses();
  * ...	[code]	...
- * flash_vGiveAsses();
+ * flash_vGiveAccesses();
  * 
  *
  */
@@ -74,8 +74,8 @@
 #define FLASH_BASE_ADDRESS 		( ( (u32)0x08000000 ) + (PAGESIZE * FLASH_PAGE)  )
 
 void flash_vInit( void );
-void flash_vTakeAsses( void );
-void flash_vGiveAsses( void );
+void flash_vTakeAccesses( void );
+void flash_vGiveAccesses( void );
 
 void flash_vWriteByteToBuffer( cu16 cuIdx, cu8 cuData );
 void flash_vWriteBlockToBuffer(const u8 *pcuData, const size_t cuSizeBlock);

@@ -85,7 +85,7 @@
 
 
 /* Private macro -------------------------------------------------------------*/
-#define QUEUE_SIZE		( 1		)
+#define QUEUE_SIZE		( 4		)
 #define START_COUNTER_IWDG	( 0x42U		)
 #define STOP_COUNTER_IWDG	( 0x4CU		)
 

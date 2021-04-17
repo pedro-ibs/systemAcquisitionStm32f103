@@ -201,7 +201,6 @@ void usart_vSendChr(const xTTY xtty, CCHR ccChr){
 void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	if(usart_bCheckError(xtty))	return;
 	if(pcBuffer == NULL)		return;
-	
 	for(size_t idx = 0; idx<cuSize; idx++){
 		usart_vSendChr(xtty, pcBuffer[idx]);
 	}
@@ -222,6 +221,7 @@ void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
 void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	usart_vSendBlk(xtty, pcBuffer, cuSize);
 	usart_vSendBlk(xtty, "\r\n", 2);
+
 }
 
 
@@ -247,7 +247,7 @@ void usart_vSendStr(const xTTY xtty, CCHR *pcString){
  * @param pcString, string a ser enviada 
  */
 void usart_vSendStrLn(const xTTY xtty, CCHR *pcString){
-	usart_vSendBlk(xtty, pcString, strlen(pcString));
+	usart_vSendBlkLn(xtty, pcString, strlen(pcString));
 }
 
 
@@ -296,7 +296,7 @@ void usart_vInitIT(const xTTY xtty){
 	__HAL_USART_DISABLE_IT(&xUsartIT[xtty].xHandle,	USART_IT_TXE);
 	__HAL_USART_ENABLE_IT(&xUsartIT[xtty].xHandle,	USART_IT_RXNE);
 	
-	HAL_NVIC_SetPriority(xUsartIT[xtty].xIRQ, NVIC_PRIORITY_USART, NVIC_SUBPRIORITY_USART);
+	HAL_NVIC_SetPriority(xUsartIT[xtty].xIRQ, USART_NVIC_PRIORITY, USART_NVIC_SUBPRIORITY);
 	HAL_NVIC_EnableIRQ(xUsartIT[xtty].xIRQ);
 }
 

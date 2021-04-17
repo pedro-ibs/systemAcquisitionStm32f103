@@ -40,7 +40,11 @@
 #define timer_3_H_
 
 /* macro ---------------------------------------------------------------------*/
-#define FREG_TO_COUNTER(FREG, PRES)	( ( (congigCPU_CLOCK_HZ_VALUE/PRES) / (FREG*2) ) )
+#define FREG_TO_COUNTER(FREG, PRES)	( ( ((float)congigCPU_CLOCK_HZ_VALUE/PRES) / (FREG*2) ) )
+
+
+#define TIM3_NVIC_PRIORITY		( 2 )
+#define TIM3_NVIC_SUBPRIORITY		( 2 )
 
 
 /* Definition ----------------------------------------------------------------*/
@@ -65,7 +69,7 @@ void tim3_vDeinit( void );
  * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS
  * para o controle de troca de contexto em interruições.
  */
-extern void tim3_vHandler(BaseType_t *const pxHigherPriorityTaskWoken);
+extern  void tim3_vHandler(BaseType_t *const pxHigherPriorityTaskWoken);
 
 
 #endif /* timer_3_H_ */

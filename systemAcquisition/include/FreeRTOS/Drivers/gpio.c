@@ -219,6 +219,9 @@ void gpio_vWrite(const xGpioLabel cxGPIOxx, _bool bValue) {
  */
 void gpio_vToggle(const xGpioLabel cxGPIOxx) {
 	HAL_GPIO_TogglePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx);
+
+
+	
 }
 
 /*########################################################################################################################################################*/

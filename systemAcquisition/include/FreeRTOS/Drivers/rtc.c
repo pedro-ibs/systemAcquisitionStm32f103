@@ -1,4 +1,4 @@
-/*
+/**
  * rtc.c.c
  *
  *  @date Created at:	03/03/2021 16:10:56
@@ -199,7 +199,7 @@ CCHR *rtc_pcBuildTimeStamp(const RTC_DateTypeDef xDate, const RTC_TimeTypeDef xT
 
 	xSemaphoreGive(xSemaphoreRTC);
 
-	return pcBuffer;
+	return (CCHR*)pcBuffer;
 }
 
 

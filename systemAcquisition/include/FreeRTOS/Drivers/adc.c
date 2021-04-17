@@ -1,4 +1,4 @@
-/*
+/**
  * adc.c
  *
  *  @date Created at:	26/02/2021 10:53:26
@@ -338,7 +338,7 @@ void adc1_vDMA1(void){
 
 	__HAL_LINKDMA(&xAdc1, DMA_Handle, xDmaAdc1);
 
-	HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+	HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, ADC1_DMA1_NVIC_PRIORITY, ADC1_DMA1_NVIC_SUBPRIORITY);
 	HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 

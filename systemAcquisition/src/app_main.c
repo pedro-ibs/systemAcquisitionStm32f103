@@ -1,4 +1,4 @@
-/*
+/**
  * main.c
  *
  *  @date Created at:	22/02/2021 11:54:32
@@ -42,6 +42,7 @@
 #include <FreeRTOS/include/task.h>
 #include <FreeRTOS/include/list.h>
 #include <FreeRTOS/include/queue.h>
+#include <FreeRTOS/include/semphr.h>
 #include <FreeRTOS/include/portable.h>
 
 #include <FreeRTOS/Drivers/gpio.h>
@@ -52,20 +53,23 @@
 #include <FreeRTOS/Drivers/watchDogs.h>
 #include <FreeRTOS/Drivers/flash.h>
 
-
 #include <lib/textProtocol/protocol.h>
 
 
 /* Private macro -------------------------------------------------------------*/
+
+#define SIZE_BUFFER	(2 * ADC1_SIZE_BUFFER)
+
 /* Private variables ---------------------------------------------------------*/
-static TaskHandle_t xMainAppHandle = NULL;
+static TaskHandle_t xMainAppHandle	= NULL;
+static QueueSetHandle_t	xQueue		= NULL;
+static char pcBuffer[SIZE_BUFFER]	= "";
 
 /* Private Functions ---------------------------------------------------------*/
 void main_vApp(void * pvParameters);
 void main_vInitTasks(void);
 void main_vSetup(void);
 void main_vLoop(void);
-
 
 
 void blink(void * pvParameters);
@@ -83,6 +87,19 @@ void blink(void * pvParameters);
  * 
  */
 void main_vSetup(void){
+	
+	if(xQueue == NULL){
+		xQueue = xQueueCreate(2, SIZE_BUFFER);
+	}
+	
+	gpio_vInitAll();
+	gpio_vDisableDebug();
+	rtc_vInit();
+	usart_vSetup(ttyUSART1, usart_1M0bps);
+	adc1_vInitGetSample(1 , FREG_TO_COUNTER(50000, 1));
+
+	usart_vAtomicSendStrLn(ttyUSART1, "Sitema carregado");
+	vTaskDelay(_5S);
 
 }
 
@@ -101,8 +118,9 @@ void main_vInitTasks(void) {
  * 
  */
 void main_vLoop(void){
-
-	vTaskDelay(_1S);
+	if(xQueueReceive(xQueue, pcBuffer, portMAX_DELAY)){
+		usart_vAtomicSendBlk(ttyUSART1, pcBuffer, SIZE_BUFFER);
+	}
 }
 
 
@@ -119,6 +137,15 @@ void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken){
  */
 void adc1_vDMA1Ch1Handler( BaseType_t *const pxHigherPriorityTaskWoken ){
 	(void) pxHigherPriorityTaskWoken;
+	/**
+	 * Copiar os dado para o buffer 
+	 */
+	if (xQueueSendFromISR(xQueue, adc1_puGetBuffer(), pxHigherPriorityTaskWoken) == pdFAIL){
+		/**
+		 * Caso a transmissão  seja muito lenta 
+		 */
+		NVIC_SystemReset(); 
+	}
 }
 
 /**

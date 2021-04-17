@@ -1,4 +1,4 @@
-/*
+/**
  *  EEPROMemulation.c
  *
  *  @date Created at:	19/03/2021 12:21:35
@@ -54,9 +54,9 @@
  * utilizar uma ou um grupo de funções deste driver deve ser usado as funções 
  * de controle de acesso:
  * 
- * flash_vTakeAsses();
+ * flash_vTakeAccesses();
  * ...	[code]	...
- * flash_vGiveAsses();
+ * flash_vGiveAccesses();
  *
  */
 
@@ -114,14 +114,14 @@ void flash_vInit( void ){
 /**
  * @brief pega o acesso da flash
  */
-void flash_vTakeAsses( void ){
+void flash_vTakeAccesses( void ){
 	xSemaphoreTake(xFlash, portMAX_DELAY);
 }
 
 /**
  * @brief devolve o acesso da flash
  */
-void flash_vGiveAsses( void ){
+void flash_vGiveAccesses( void ){
 	xSemaphoreGive(xFlash);
 }
 
