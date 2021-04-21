@@ -146,7 +146,7 @@ void gpio_vDisableDebug (void) {
  *	GPIO_PULLUP  		"Pull-up"	ativado;             
  *	GPIO_PULLDOWN		"Pull-down" 	ativado ;               
  */
-void gpio_vMode (const xGpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull) {
+void gpio_vMode (const GpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull) {
 	
 	HAL_GPIO_WritePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx, GPIO_PIN_RESET);
 	
@@ -166,7 +166,7 @@ void gpio_vMode (const xGpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull) {
  * @note configuraçõe fixas: GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH
  * @param cxGPIOxx, pino a ser configurado
  */
-void gpio_vAnalogMode (const xGpioLabel cxGPIOxx) {
+void gpio_vAnalogMode (const GpioLabel cxGPIOxx) {
 	
 	
 	GPIO_InitTypeDef GPIO_InitStruct	= {0};
@@ -184,7 +184,7 @@ void gpio_vAnalogMode (const xGpioLabel cxGPIOxx) {
  * @brief desativa o pino GPIO
  * @param cxGPIOxx, pino a ser configurado
  */
-void gpio_vDeinit(const xGpioLabel cxGPIOxx){
+void gpio_vDeinit(const GpioLabel cxGPIOxx){
 	HAL_GPIO_DeInit(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx);
 }
 
@@ -197,7 +197,7 @@ void gpio_vDeinit(const xGpioLabel cxGPIOxx){
  * @return TRUE:	estado 1/HIGH/GPIO_PIN_SET
  * 
  */
-_bool gpio_bRead(const xGpioLabel cxGPIOxx) {
+_bool gpio_bRead(const GpioLabel cxGPIOxx) {
 	if(HAL_GPIO_ReadPin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx) == GPIO_PIN_RESET) {
 		return FALSE;
 	}
@@ -209,7 +209,7 @@ _bool gpio_bRead(const xGpioLabel cxGPIOxx) {
  * @param bValue TRUE:	para estado 1/HIGH/GPIO_PIN_SET
  * @param bValue FALSE:	para estado 0/LOW/GPIO_PIN_RESET
  */
-void gpio_vWrite(const xGpioLabel cxGPIOxx, _bool bValue) {
+void gpio_vWrite(const GpioLabel cxGPIOxx, _bool bValue) {
 	HAL_GPIO_WritePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx, (bValue)?(GPIO_PIN_SET):(GPIO_PIN_RESET));
 }
 
@@ -217,7 +217,7 @@ void gpio_vWrite(const xGpioLabel cxGPIOxx, _bool bValue) {
  * @brief troca o estado do pino
  * @param cxGPIOxx, pino que trocará de estado
  */
-void gpio_vToggle(const xGpioLabel cxGPIOxx) {
+void gpio_vToggle(const GpioLabel cxGPIOxx) {
 	HAL_GPIO_TogglePin(xGpio[cxGPIOxx].pxGPIOx, xGpio[cxGPIOxx].uPINx);
 
 

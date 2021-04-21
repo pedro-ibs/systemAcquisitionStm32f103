@@ -66,7 +66,7 @@ static xUsartHandle xUH[ttyNUM] ={
 
 
 /* Private Functions ---------------------------------------------------------*/
-void usart_vSetupGPIO(const xTTY xtty);
+void usart_vSetupGPIO(const TTY xtty);
 
 
 /**
@@ -74,7 +74,7 @@ void usart_vSetupGPIO(const xTTY xtty);
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada.
  */
-void usart_vTakeAccess(const xTTY xtty){
+void usart_vTakeAccess(const TTY xtty){
 	if(xUH[xtty].xSemaphore == NULL) return;
 	xSemaphoreTake(xUH[xtty].xSemaphore, portMAX_DELAY );
 }
@@ -85,7 +85,7 @@ void usart_vTakeAccess(const xTTY xtty){
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada.
  */
-void usart_vGiveAccess(const xTTY xtty){
+void usart_vGiveAccess(const TTY xtty){
 	if(xUH[xtty].xSemaphore == NULL) return;
 	xSemaphoreGive(xUH[xtty].xSemaphore);
 }
@@ -96,9 +96,9 @@ void usart_vGiveAccess(const xTTY xtty){
  * @param xHandle: handle de configuração da usart da camada HAL 
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada
- * @param xBaudRate, velocidade da porta serial.
+ * @param BaudRate, velocidade da porta serial.
  */
-void usart_vInit(UART_HandleTypeDef *xHandle, const xTTY xtty,  xBaudRate cuBaudRate){
+void usart_vInit(UART_HandleTypeDef *xHandle, const TTY xtty,  BaudRate cuBaudRate){
 	if(xUH[xtty].xSemaphore == NULL){
 		xUH[xtty].xSemaphore = xSemaphoreCreateMutex();		
 	}
@@ -131,7 +131,7 @@ void usart_vInit(UART_HandleTypeDef *xHandle, const xTTY xtty,  xBaudRate cuBaud
  * xtty seja invalido a função não será executada
  * @param ccChr, caractere tipo const char
  */
-void usart_vAtomicSendChr(const xTTY xtty, CCHR ccChr){
+void usart_vAtomicSendChr(const TTY xtty, CCHR ccChr){
 	if(xUH[xtty].pxHandle == NULL)	return;
 	while ( HAL_UART_GetState(xUH[xtty].pxHandle) != HAL_UART_STATE_READY);
 	HAL_UART_Transmit(xUH[xtty].pxHandle, (u8*)&ccChr, 1, UART_TRANSMIT_TIMEOUT);
@@ -145,7 +145,7 @@ void usart_vAtomicSendChr(const xTTY xtty, CCHR ccChr){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vAtomicSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vAtomicSendBlk(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	if(xUH[xtty].pxHandle == NULL)	return;
 	if(pcBuffer == NULL)		return;
 	while ( HAL_UART_GetState(xUH[xtty].pxHandle) != HAL_UART_STATE_READY);
@@ -161,7 +161,7 @@ void usart_vAtomicSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vAtomicSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vAtomicSendBlkLn(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	usart_vAtomicSendBlk(xtty, pcBuffer, cuSize);
 	usart_vAtomicSendBlk(xtty, "\r\n", 2);
 }
@@ -172,7 +172,7 @@ void usart_vAtomicSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize
  * xtty seja invalido a função não será executada
  * @param pcString, buffer a ser enviado 
  */
-void usart_vAtomicSendStr(const xTTY xtty, CCHR *pcString){
+void usart_vAtomicSendStr(const TTY xtty, CCHR *pcString){
 	usart_vAtomicSendBlk(xtty, pcString, strlen(pcString));
 }
 
@@ -182,7 +182,7 @@ void usart_vAtomicSendStr(const xTTY xtty, CCHR *pcString){
  * xtty seja invalido a função não será executada
  * @param pcString, buffer a ser enviado 
  */
-void usart_vAtomicSendStrLn(const xTTY xtty, CCHR *pcString){
+void usart_vAtomicSendStrLn(const TTY xtty, CCHR *pcString){
 	usart_vAtomicSendBlkLn(xtty, pcString, strlen(pcString));
 }
 
@@ -200,7 +200,7 @@ void usart_vAtomicSendStrLn(const xTTY xtty, CCHR *pcString){
  * @brief inicialisa os GPIO para cada USART
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3
  */
-void usart_vSetupGPIO(const xTTY xtty){
+void usart_vSetupGPIO(const TTY xtty){
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
     	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 

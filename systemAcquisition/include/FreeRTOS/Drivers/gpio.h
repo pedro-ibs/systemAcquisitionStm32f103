@@ -89,16 +89,16 @@ typedef enum {
 	GPIOD0,
 	GPIOD1,
 	GPIO_NUM
-}xGpioLabel;
+}GpioLabel;
 
 
 void gpio_vInitAll( void );
 void gpio_vDisableDebug ( void );
-void gpio_vMode (const xGpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull );
-void gpio_vAnalogMode (const xGpioLabel cxGPIOxx);
-void gpio_vDeinit(const xGpioLabel cxGPIOxx);
-_bool gpio_bRead(const xGpioLabel cxGPIOxx);
-void gpio_vWrite(const xGpioLabel cxGPIOxx, _bool bValue );
-void gpio_vToggle(const xGpioLabel cxGPIOxx);
+void gpio_vMode (const GpioLabel cxGPIOxx, cu32 cuMode, cu32 cuPull );
+void gpio_vAnalogMode (const GpioLabel cxGPIOxx);
+void gpio_vDeinit(const GpioLabel cxGPIOxx);
+_bool gpio_bRead(const GpioLabel cxGPIOxx);
+void gpio_vWrite(const GpioLabel cxGPIOxx, _bool bValue );
+void gpio_vToggle(const GpioLabel cxGPIOxx);
 
 #endif /* gpio_H_ */

@@ -71,7 +71,7 @@ static const xUsartSetting xUsartSet[ttyNUM] = {
 };
 
 /* Private Functions ---------------------------------------------------------*/
-void usart_vInitDMA(const xTTY xtty);
+void usart_vInitDMA(const TTY xtty);
 
 
 
@@ -79,9 +79,9 @@ void usart_vInitDMA(const xTTY xtty);
  * @brief inicia a uart e variaveis use gpio_vInitAll() antes.
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada
- * @param xBaudRate, velocidade da porta serial.
+ * @param BaudRate, velocidade da porta serial.
  */
-void usart_vSetup(const xTTY xtty, const xBaudRate cuBaudRate){
+void usart_vSetup(const TTY xtty, const BaudRate cuBaudRate){
 	usart_vInit(&xUsartDMA[xtty].xHandle, xtty, cuBaudRate);
 	usart_vInitDMA(xtty);
 }
@@ -94,7 +94,7 @@ void usart_vSetup(const xTTY xtty, const xBaudRate cuBaudRate){
  * returnado será -1, do contrario o valor returnado
  * será o tamanho ocupado do buffer RXD .
  */
-int usart_iSizeBuffer(const xTTY xtty){
+int usart_iSizeBuffer(const TTY xtty){
 	//TODO: func
 	return 0;
 }
@@ -105,7 +105,7 @@ int usart_iSizeBuffer(const xTTY xtty){
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada.
  */
-void usart_vCleanBuffer(const xTTY xtty){
+void usart_vCleanBuffer(const TTY xtty){
 		//TODO: func
 }
 
@@ -117,7 +117,7 @@ void usart_vCleanBuffer(const xTTY xtty){
  * @return CCHR: retorna o ponteiro do tipo CCHR (const char *)
  * do buffer pcRXD. caso xtty seja invalido será retornado NULL
  */
-CCHR *usart_pcGetBuffer(xTTY xtty){
+CCHR *usart_pcGetBuffer(TTY xtty){
 	//TODO: func
 	return NULL;
 }
@@ -132,7 +132,7 @@ CCHR *usart_pcGetBuffer(xTTY xtty){
  * xtty seja invalido a função não será executada
  * @param ccChr, caractere tipo const char
  */
-void usart_vSendChr(const xTTY xtty, CCHR ccChr){
+void usart_vSendChr(const TTY xtty, CCHR ccChr){
 	while ( HAL_UART_GetState(&xUsartDMA[xtty].xHandle) != HAL_UART_STATE_READY);
 	HAL_UART_Transmit_DMA(&xUsartDMA[xtty].xHandle, (u8*)&ccChr, 1);
 };
@@ -148,7 +148,7 @@ void usart_vSendChr(const xTTY xtty, CCHR ccChr){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vSendBlk(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	while ( HAL_UART_GetState(&xUsartDMA[xtty].xHandle) != HAL_UART_STATE_READY);
 	HAL_UART_Transmit_DMA(&xUsartDMA[xtty].xHandle, (u8*)pcBuffer, cuSize);
 }
@@ -165,7 +165,7 @@ void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vSendBlkLn(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	usart_vSendBlk(xtty, pcBuffer, cuSize);
 	usart_vSendBlk(xtty, "\r\n", 2);
 }
@@ -177,7 +177,7 @@ void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
 /*-------------------------------------------------------------------- Private Functions -----------------------------------------------------------------*/
 /*########################################################################################################################################################*/
 
-void usart_vInitDMA(const xTTY xtty) {
+void usart_vInitDMA(const TTY xtty) {
 	
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	

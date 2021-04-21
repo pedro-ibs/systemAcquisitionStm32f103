@@ -77,19 +77,19 @@ static xUsartHandleData xUsartIT[ttyNUM] = {
 
 
 /* Private Functions ---------------------------------------------------------*/
-_bool usart_bCheckError(const xTTY xtty);
-void usart_vInitVars(const xTTY xtty);
-void usart_vInitIT(const xTTY xtty);
-void usart_vIT(const xTTY xtty,BaseType_t *const pxHigherPriorityTaskWoken);
+_bool usart_bCheckError(const TTY xtty);
+void usart_vInitVars(const TTY xtty);
+void usart_vInitIT(const TTY xtty);
+void usart_vIT(const TTY xtty,BaseType_t *const pxHigherPriorityTaskWoken);
 
 
 /**
  * @brief inicia a uart e variaveis use gpio_vInitAll() antes.
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada
- * @param xBaudRate, velocidade da porta serial.
+ * @param BaudRate, velocidade da porta serial.
  */
-void usart_vSetup(xTTY xtty, const xBaudRate cuBaudRate){	
+void usart_vSetup(TTY xtty, const BaudRate cuBaudRate){	
 	if(xtty >= ttyNUM) return;
 
 	usart_vInitVars(xtty);
@@ -104,7 +104,7 @@ void usart_vSetup(xTTY xtty, const xBaudRate cuBaudRate){
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada.
  */
-void usart_vStopIT_RXD(const xTTY xtty){
+void usart_vStopIT_RXD(const TTY xtty){
 	if(usart_bCheckError(xtty)) return;
 	__HAL_USART_DISABLE_IT(&xUsartIT[xtty].xHandle, USART_IT_RXNE);
 }
@@ -116,7 +116,7 @@ void usart_vStopIT_RXD(const xTTY xtty){
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada.
  */
-void usart_vStartIT_RXD(const xTTY xtty){
+void usart_vStartIT_RXD(const TTY xtty){
 	if(usart_bCheckError(xtty)) return;
 	__HAL_USART_ENABLE_IT(&xUsartIT[xtty].xHandle, USART_IT_RXNE);	
 }
@@ -129,7 +129,7 @@ void usart_vStartIT_RXD(const xTTY xtty){
  * returnado será -1, do contrario o valor returnado
  * será o tamanho ocupado do buffer RXD .
  */
-int usart_iSizeBuffer(const xTTY xtty){
+int usart_iSizeBuffer(const TTY xtty){
 	if(usart_bCheckError(xtty)) return -1;
 	return xUsartIT[xtty].uSizeBuffer;
 }
@@ -140,7 +140,7 @@ int usart_iSizeBuffer(const xTTY xtty){
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada.
  */
-void usart_vCleanBuffer(const xTTY xtty){
+void usart_vCleanBuffer(const TTY xtty){
 	if(usart_bCheckError(xtty)) return;
 	for(size_t uIdx=0; uIdx<SIZE_BUFFER_RXD; uIdx++){
 		xUsartIT[xtty].pcRXD[uIdx] = 0x00U;
@@ -156,7 +156,7 @@ void usart_vCleanBuffer(const xTTY xtty){
  * @return CCHR: retorna o ponteiro do tipo CCHR (const char *)
  * do buffer pcRXD. caso xtty seja invalido será retornado NULL
  */
-CCHR *usart_pcGetBuffer(xTTY xtty){
+CCHR *usart_pcGetBuffer(TTY xtty){
 	if(usart_bCheckError(xtty)) return NULL;
 	return (CCHR*)xUsartIT[xtty].pcRXD;
 }
@@ -171,7 +171,7 @@ CCHR *usart_pcGetBuffer(xTTY xtty){
  * xtty seja invalido a função não será executada
  * @param ccChr, caractere tipo const char
  */
-void usart_vSendChr(const xTTY xtty, CCHR ccChr){
+void usart_vSendChr(const TTY xtty, CCHR ccChr){
 	if(usart_bCheckError(xtty)) return;
 
 	/* se a queue estiver cheia esse while possibilita a troca de
@@ -198,7 +198,7 @@ void usart_vSendChr(const xTTY xtty, CCHR ccChr){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vSendBlk(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	if(usart_bCheckError(xtty))	return;
 	if(pcBuffer == NULL)		return;
 	for(size_t idx = 0; idx<cuSize; idx++){
@@ -218,7 +218,7 @@ void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
  * @param pcBuffer, buffer a ser enviado 
  * @param cuSize tamanho exato de pcBuffer
  */
-void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
+void usart_vSendBlkLn(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	usart_vSendBlk(xtty, pcBuffer, cuSize);
 	usart_vSendBlk(xtty, "\r\n", 2);
 
@@ -233,7 +233,7 @@ void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize){
  * xtty seja invalido a função não será executada
  * @param pcString, string a ser enviada 
  */
-void usart_vSendStr(const xTTY xtty, CCHR *pcString){
+void usart_vSendStr(const TTY xtty, CCHR *pcString){
 	usart_vSendBlk(xtty, pcString, strlen(pcString));
 }
 
@@ -246,7 +246,7 @@ void usart_vSendStr(const xTTY xtty, CCHR *pcString){
  * xtty seja invalido a função não será executada
  * @param pcString, string a ser enviada 
  */
-void usart_vSendStrLn(const xTTY xtty, CCHR *pcString){
+void usart_vSendStrLn(const TTY xtty, CCHR *pcString){
 	usart_vSendBlkLn(xtty, pcString, strlen(pcString));
 }
 
@@ -263,7 +263,7 @@ void usart_vSendStrLn(const xTTY xtty, CCHR *pcString){
  * @return TRUE: variavel não inicialisadas
  * @return FALSE: variavel inicialisadas
  */
-_bool usart_bCheckError(const xTTY xtty){
+_bool usart_bCheckError(const TTY xtty){
 	if(xtty >= ttyNUM)			return	TRUE;
 	if(xUsartIT[xtty].pcRXD == NULL)	return	TRUE;
 	return 						FALSE;
@@ -274,7 +274,7 @@ _bool usart_bCheckError(const xTTY xtty){
  * @brief inicialisa as queue para cada USART
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3
  */
-void usart_vInitVars(const xTTY xtty){
+void usart_vInitVars(const TTY xtty){
 
 	if(xUsartIT[xtty].xTXD == NULL){
 		xUsartIT[xtty].xTXD = xQueueCreate(SIZE_BUFFER_TXD, sizeof(char));
@@ -291,7 +291,7 @@ void usart_vInitVars(const xTTY xtty){
  * @brief inicialisa as interrupções para cada USART
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3
  */
-void usart_vInitIT(const xTTY xtty){
+void usart_vInitIT(const TTY xtty){
 	__HAL_USART_CLEAR_FLAG(&xUsartIT[xtty].xHandle,	USART_FLAG_RXNE | USART_FLAG_TXE );
 	__HAL_USART_DISABLE_IT(&xUsartIT[xtty].xHandle,	USART_IT_TXE);
 	__HAL_USART_ENABLE_IT(&xUsartIT[xtty].xHandle,	USART_IT_RXNE);
@@ -307,7 +307,7 @@ void usart_vInitIT(const xTTY xtty){
  * @param pxHigherPriorityTaskWoken, recurso do FreeRTOS para o controle
  * de troca de contexto em interruições. 
  */
-void usart_vIT(const xTTY xtty, BaseType_t *const pxHigherPriorityTaskWoken){
+void usart_vIT(const TTY xtty, BaseType_t *const pxHigherPriorityTaskWoken){
 
 	// interrupção por recebimento de um framer 
 	if(__HAL_UART_GET_FLAG(&xUsartIT[xtty].xHandle, USART_FLAG_RXNE) == SET){

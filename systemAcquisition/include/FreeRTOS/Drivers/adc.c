@@ -129,8 +129,8 @@ static u16 puAdc1Swap[ADC1_RANK_NUM]		= { 0 };
 static SemaphoreHandle_t xAdc1Semaphore		= NULL;
 
 /* Private Functions ---------------------------------------------------------*/
-void adc1_vInitChannel(const xAdcChannel cuChannel);
-void adc1_vDeInitChannel(const xAdcChannel cuChannel);
+void adc1_vInitChannel(const AdcChannel cuChannel);
+void adc1_vDeInitChannel(const AdcChannel cuChannel);
 void adc1_vDMA1(void);
 void adc1_vInitVar(void);
 
@@ -162,7 +162,7 @@ void adc1_vInitGetSample(cu32 uPrescaler, cu32 uPeriod){
 		Error_Handler();
 	}
 
-	for (xAdcChannel xIdx=0; xIdx < ADC1_NUM; xIdx++) {
+	for (AdcChannel xIdx=0; xIdx < ADC1_NUM; xIdx++) {
 		if( pxAdcCH[xIdx].uRANK != ADC1_CHANNEL_DISABLE ){
 			adc1_vInitChannel(xIdx);
 		}
@@ -193,7 +193,7 @@ void adc1_vDeInitGetSample(void){
 
 	HAL_DMA_DeInit(xAdc1.DMA_Handle);
 
-	for (xAdcChannel xIdx=0; xIdx < ADC1_NUM; xIdx++) {
+	for (AdcChannel xIdx=0; xIdx < ADC1_NUM; xIdx++) {
 		if( pxAdcCH[xIdx].uRANK != ADC1_CHANNEL_DISABLE ){
 			adc1_vDeInitChannel(xIdx);
 		}
@@ -213,7 +213,7 @@ void adc1_vDeInitGetSample(void){
  * @return -1, caso a leitura seja de um canal invalido
  * ou não habilitado
  */
-int adc1_iGetFirstValue(const xAdcChannel cuChannel){
+int adc1_iGetFirstValue(const AdcChannel cuChannel){
 	if(pxAdcCH[cuChannel].uRANK == ADC1_CHANNEL_DISABLE){
 		return -1;
 	}
@@ -274,7 +274,7 @@ const u16 *adc1_puGetBuffer(void){
  * @param cuChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
  * e ADC1_PB1
  */
-void adc1_vInitChannel(const xAdcChannel cuChannel){
+void adc1_vInitChannel(const AdcChannel cuChannel){
 	gpio_vAnalogMode(pxAdcCH[cuChannel].uGPIO);
 
 	ADC_ChannelConfTypeDef xConfig		= {0};
@@ -295,7 +295,7 @@ void adc1_vInitChannel(const xAdcChannel cuChannel){
  * @param cuChannel, de ADC1_PA0 até ADC1_PA7. ADC1_PB0
  * e ADC1_PB1
  */
-void adc1_vDeInitChannel(const xAdcChannel cuChannel){
+void adc1_vDeInitChannel(const AdcChannel cuChannel){
 	gpio_vDeinit(cuChannel);	
 }
 

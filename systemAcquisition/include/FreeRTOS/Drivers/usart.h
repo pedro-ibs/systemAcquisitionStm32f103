@@ -92,7 +92,7 @@ typedef enum{
 	ttyUSART2,
 	ttyUSART3,
 	ttyNUM
-}xTTY;
+}TTY;
 
 
 typedef enum{
@@ -112,32 +112,32 @@ typedef enum{
 	usart_460k8bps	= 460800,
 	usart_500k0bps	= 500000,
 	usart_1M0bps	= 1000000,
-}xBaudRate;
+}BaudRate;
 
 
-void usart_vInit(UART_HandleTypeDef *xHandle, const xTTY xtty,  xBaudRate cuBaudRate);
+void usart_vInit(UART_HandleTypeDef *xHandle, const TTY xtty,  BaudRate cuBaudRate);
 
-void usart_vSetup(const xTTY xtty, const xBaudRate cuBaudRate);
+void usart_vSetup(const TTY xtty, const BaudRate cuBaudRate);
 
-void usart_vTakeAccess(const xTTY xtty);
-void usart_vGiveAccess(const xTTY xtty);
+void usart_vTakeAccess(const TTY xtty);
+void usart_vGiveAccess(const TTY xtty);
 
-void usart_vCleanBuffer(const xTTY xtty);
-int usart_iSizeBuffer(const xTTY xtty);
-CCHR *usart_pcGetBuffer(xTTY xtty);
+void usart_vCleanBuffer(const TTY xtty);
+int usart_iSizeBuffer(const TTY xtty);
+CCHR *usart_pcGetBuffer(TTY xtty);
 
-void usart_vAtomicSendChr(const xTTY xtty, CCHR ccChr);
-void usart_vAtomicSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
-void usart_vAtomicSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
-void usart_vAtomicSendStr(const xTTY xtty, CCHR *pcString);
-void usart_vAtomicSendStrLn(const xTTY xtty, CCHR *pcString);
+void usart_vAtomicSendChr(const TTY xtty, CCHR ccChr);
+void usart_vAtomicSendBlk(const TTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vAtomicSendBlkLn(const TTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vAtomicSendStr(const TTY xtty, CCHR *pcString);
+void usart_vAtomicSendStrLn(const TTY xtty, CCHR *pcString);
 
 
-void usart_vSendChr(const xTTY xtty, CCHR ccChr);
-void usart_vSendBlk(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
-void usart_vSendBlkLn(const xTTY xtty, CCHR *pcBuffer, const size_t cuSize);
-void usart_vSendStr(const xTTY xtty, CCHR *pcString);
-void usart_vSendStrLn(const xTTY xtty, CCHR *pcString);
+void usart_vSendChr(const TTY xtty, CCHR ccChr);
+void usart_vSendBlk(const TTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vSendBlkLn(const TTY xtty, CCHR *pcBuffer, const size_t cuSize);
+void usart_vSendStr(const TTY xtty, CCHR *pcString);
+void usart_vSendStrLn(const TTY xtty, CCHR *pcString);
 
 
 

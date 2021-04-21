@@ -175,11 +175,11 @@ typedef enum {
 	ADC1_PB0,
 	ADC1_PB1,
 	ADC1_NUM
-} xAdcChannel;
+} AdcChannel;
 
 void adc1_vInitGetSample(cu32 uPrescaler, cu32 uPeriod);
 void adc1_vDeInitGetSample(void);
-int adc1_iGetFirstValue(const xAdcChannel cuChannel);
+int adc1_iGetFirstValue(const AdcChannel cuChannel);
 
 u16 *adc1_puCopyBuffer( u16 *puSaveAt );
 const u16 *adc1_puGetBuffer(void);

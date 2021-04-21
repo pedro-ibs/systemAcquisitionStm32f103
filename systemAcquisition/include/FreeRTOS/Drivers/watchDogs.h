@@ -54,7 +54,7 @@
  * macro TIMEOUT_TO_RESET a task do IWDG força o reinicio so microcontrolador.
  * Essa que aceita apenas um elemento por vez. 
  *
- * O tipo de dados xIwdgVirtualConter é o que determinam o numero de contadores
+ * O tipo de dados IwdgVirtualConter é o que determinam o numero de contadores
  * virtuais desse driver. cada contador deve ser dedicado para apenas uma task
  * ele é do tipo TickType_t e não o cupa o heap das tasks
  * 
@@ -104,7 +104,7 @@ typedef enum {
 	iwdgVC_22,
 	iwdgVC_23,
 	iwdgVC_NUM
-} xIwdgVirtualConter;
+} IwdgVirtualConter;
 
 
 void iwdg_vInit(void);
