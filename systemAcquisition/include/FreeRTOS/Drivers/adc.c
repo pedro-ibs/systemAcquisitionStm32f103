@@ -176,6 +176,23 @@ void adc1_vInitGetSample(cu32 uPrescaler, cu32 uPeriod){
 
 
 /**
+ * @brief pega o acesso do adc1
+ */
+void adc1_vTakeAccess(){
+	adc1_vInitVar();
+	xSemaphoreTake(xAdc1Semaphore, portMAX_DELAY);	
+}
+
+
+/**
+ * @brief devolve o acesso do adc1
+ */
+void adc1_vGiveAccess(){
+	adc1_vInitVar();
+	xSemaphoreGive(xAdc1Semaphore);
+}
+
+/**
  * @brief desativa acoleta de dados
  * @note desativa o ADC1 e canaisrespectivos DMA e TIMER
  * @param none

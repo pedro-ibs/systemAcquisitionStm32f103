@@ -133,8 +133,8 @@
  * Onde cada chX é um índice do vetor que vai de 0 a 29.
  * 
  */
-#define ADC1_RANK_NUM 		( 1 )
-#define ADC1_SIZE_BUFFER 	( ADC1_RANK_NUM * 200 )
+#define ADC1_RANK_NUM 		( 2 )
+#define ADC1_SIZE_BUFFER 	( ADC1_RANK_NUM * ADC1_RANK_NUM )
 
 /**
  * Utilise essas macros para o tempo de amostragem de cada 
@@ -183,6 +183,10 @@ int adc1_iGetFirstValue(const AdcChannel cuChannel);
 
 u16 *adc1_puCopyBuffer( u16 *puSaveAt );
 const u16 *adc1_puGetBuffer(void);
+
+void adc1_vTakeAccess();
+void adc1_vGiveAccess();
+
 
 /**
  * @brief Função dentro da interrupção DMA1_Channel1_IRQHandler

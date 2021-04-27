@@ -106,7 +106,7 @@ int usart_iSizeBuffer(const TTY xtty){
  * xtty seja invalido a função não será executada.
  */
 void usart_vCleanBuffer(const TTY xtty){
-		//TODO: func
+	//TODO: func
 }
 
 
@@ -171,6 +171,35 @@ void usart_vSendBlkLn(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 }
 
 
+/**
+ * @brief envia uma string. Essa função utilizam o periferio uart junto
+ * da interrupção USART_FLAG_TXE. Esse envio ocorre por por meio de uma queue,
+ * que por meio dessa é populada enquanto a interrupção envia os dado.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada
+ * @param pcString, string a ser enviada 
+ */
+void usart_vSendStr(const TTY xtty, CCHR *pcString){
+	usart_vSendBlk(xtty, pcString, strlen(pcString));
+}
+
+/**
+ * @brief envia uma string, ao final do envio de pcString
+ * a função irá enviar "\r\n". Essa função utilizam o periferio uart junto
+ * da interrupção USART_FLAG_TXE. Esse envio ocorre por por meio de uma queue,
+ * que por meio dessa é populada enquanto a interrupção envia os dado.
+ * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
+ * xtty seja invalido a função não será executada
+ * @param pcString, string a ser enviada 
+ */
+void usart_vSendStrLn(const TTY xtty, CCHR *pcString){
+	usart_vSendBlkLn(xtty, pcString, strlen(pcString));
+}
+
+
+
+
+
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
@@ -188,7 +217,7 @@ void usart_vInitDMA(const TTY xtty) {
 	xUsartDMA[xtty].xDMA_RXD.Init.MemInc			= DMA_MINC_ENABLE;
 	xUsartDMA[xtty].xDMA_RXD.Init.PeriphDataAlignment	= DMA_PDATAALIGN_BYTE;
 	xUsartDMA[xtty].xDMA_RXD.Init.MemDataAlignment		= DMA_MDATAALIGN_BYTE;
-	xUsartDMA[xtty].xDMA_RXD.Init.Mode			= DMA_NORMAL;
+	xUsartDMA[xtty].xDMA_RXD.Init.Mode			= DMA_CIRCULAR;
 	xUsartDMA[xtty].xDMA_RXD.Init.Priority			= DMA_PRIORITY_HIGH;
 	if (HAL_DMA_Init(&xUsartDMA[xtty].xDMA_RXD) != HAL_OK) {
 		Error_Handler();
@@ -210,6 +239,15 @@ void usart_vInitDMA(const TTY xtty) {
 	}
 	__HAL_LINKDMA(&xUsartDMA[xtty].xHandle, hdmatx, xUsartDMA[xtty].xDMA_TXD);
 
+
+	// HAL_UART_DMA_Tx_Stop()
+
+	HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+	/* DMA1_Channel5_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+
 }
 
 
@@ -224,6 +262,7 @@ void DMA1_Channel4_IRQHandler(void) {
 
 void DMA1_Channel5_IRQHandler(void) {
 	HAL_DMA_IRQHandler(&xUsartDMA[ttyUSART1].xDMA_TXD);
+	HAL_UART_DMAStop(&xUsartDMA[ttyUSART1].xHandle);
 }
 
 void DMA1_Channel6_IRQHandler(void) {

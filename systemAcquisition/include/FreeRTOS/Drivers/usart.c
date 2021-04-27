@@ -206,9 +206,8 @@ void usart_vSetupGPIO(const TTY xtty){
 
 	switch (xtty) {
 		case ttyUSART1:
-			/*
-			 * habilitando uart1 e trocando so pinos 
-			 * padroes para PB6 e PB 7
+			/**
+			 * * habilitando uart1 e trocando so pinos padroes para PB6 e PB 7
 			 */			
 			__HAL_RCC_GPIOB_CLK_ENABLE();
 			__HAL_RCC_AFIO_CLK_ENABLE();

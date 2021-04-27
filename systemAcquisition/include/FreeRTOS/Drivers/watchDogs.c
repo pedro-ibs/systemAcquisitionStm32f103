@@ -89,7 +89,7 @@
 #define START_COUNTER_IWDG	( 0x42U		)
 #define STOP_COUNTER_IWDG	( 0x4CU		)
 
-#define CHAR_U32		( 2		)
+#define CHAR_U16		( 2		)
 #define IDX_CHAR_VC		( 0 		)
 #define IDX_CHAR_CMD		( 1		)
 
@@ -100,7 +100,7 @@ static QueueHandle_t		xQueueIwdg		= NULL;
 static TickType_t		puTicks[iwdgVC_NUM]	= { 0 };
 static IWDG_HandleTypeDef 	xIwdg			= { 0 };
 
-static u8 puCommand[CHAR_U32]				= { 0 };
+static u8 puCommand[CHAR_U16]				= { 0 };
 
 /* Private Functions ---------------------------------------------------------*/
 void iwdg_vTask(void * pvParameters);
@@ -113,7 +113,18 @@ void iwdg_vTask(void * pvParameters);
  */
 void iwdg_vInit(void){
 	if((xQueueIwdg == NULL) ){
-		xTaskCreate( iwdg_vTask, "iwdg", configMINIMAL_STACK_SIZE*2, NULL, IWDG_PRIORITY, NULL);		
+		BaseType_t xErr = xTaskCreate(
+			iwdg_vTask,
+			"iwdg",
+			configMINIMAL_STACK_SIZE*2,
+			NULL,
+			IWDG_PRIORITY,
+			NULL
+		);
+		
+		if(xErr != pdPASS){
+			NVIC_SystemReset();
+		} 		
 	}
 }
 
@@ -125,7 +136,7 @@ void iwdg_vInit(void){
 void iwdg_vStartConter( cu8 cuVirtualConter ){
 	if((xQueueIwdg == NULL) ) return;
 
-	u8 puCmd[CHAR_U32];
+	u8 puCmd[CHAR_U16];
 	puCmd[IDX_CHAR_CMD]	= START_COUNTER_IWDG;
 	puCmd[IDX_CHAR_VC]	= cuVirtualConter;
 
@@ -141,7 +152,7 @@ void iwdg_vStartConter( cu8 cuVirtualConter ){
 void iwdg_vStopConter( cu8 cuVirtualConter ){
 	if((xQueueIwdg == NULL) ) return;
 
-	u8 puCmd[CHAR_U32];
+	u8 puCmd[CHAR_U16];
 	puCmd[IDX_CHAR_CMD]	= STOP_COUNTER_IWDG;
 	puCmd[IDX_CHAR_VC]	= cuVirtualConter;
 

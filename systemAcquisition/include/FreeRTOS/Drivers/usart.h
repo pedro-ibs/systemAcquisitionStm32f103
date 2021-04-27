@@ -57,16 +57,16 @@
  * 
  * 
  */
-#define USART_IT		( 1 )
-#define USART_DMA		( 2 )
-#define USART_USE		( USART_IT )
+#define USART_IT				( 1		)
+#define USART_DMA				( 2		)
+#define USART_USE				( USART_IT	)
 
 
 /**
  * TODO: coc
  */
-#define SIZE_BUFFER_TXD		( 80 )
-#define SIZE_BUFFER_RXD		( 140 )
+#define QUEUE_SIZE_BUFFER_TXD			( 80		)
+#define QUEUE_SIZE_BUFFER_RXD			( 140		)
 
 
 /**
@@ -74,15 +74,15 @@
  * HAL_UART_Transmit
  * 
  */
-#define UART_TRANSMIT_TIMEOUT	( 1000 )
+#define UART_TRANSMIT_TIMEOUT			( 1000		)
 
 
 /**
  * prioridades das interruições de todos 
  * os perifericos usart
  */
-#define USART_NVIC_PRIORITY	( 0 )
-#define USART_NVIC_SUBPRIORITY	( 0 )
+#define USART_NVIC_PRIORITY			( 0		)
+#define USART_NVIC_SUBPRIORITY			( 0		)
 
 
 
@@ -123,8 +123,8 @@ void usart_vTakeAccess(const TTY xtty);
 void usart_vGiveAccess(const TTY xtty);
 
 void usart_vCleanBuffer(const TTY xtty);
-int usart_iSizeBuffer(const TTY xtty);
-CCHR *usart_pcGetBuffer(TTY xtty);
+UBaseType_t usart_iSizeBuffer(const TTY xtty);
+char *usart_pcGetBuffer(TTY xtty, char *pcSwap);
 
 void usart_vAtomicSendChr(const TTY xtty, CCHR ccChr);
 void usart_vAtomicSendBlk(const TTY xtty, CCHR *pcBuffer, const size_t cuSize);

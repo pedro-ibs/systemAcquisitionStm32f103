@@ -64,15 +64,14 @@ typedef struct {
 	UART_HandleTypeDef	xHandle;
 	IRQn_Type		xIRQ;
 	QueueHandle_t		xTXD;
-	char 			pcRXD[SIZE_BUFFER_RXD];	
-	size_t			uSizeBuffer;
+	QueueHandle_t		xRXD;
 } xUsartHandleData;
 
 
 static xUsartHandleData xUsartIT[ttyNUM] = {
-	{{0}, USART1_IRQn, NULL, "", 0},
-	{{0}, USART2_IRQn, NULL, "", 0},
-	{{0}, USART3_IRQn, NULL, "", 0}
+	{{0}, USART1_IRQn, NULL, NULL},
+	{{0}, USART2_IRQn, NULL, NULL},
+	{{0}, USART3_IRQn, NULL, NULL}
 };
 
 
@@ -129,9 +128,9 @@ void usart_vStartIT_RXD(const TTY xtty){
  * returnado será -1, do contrario o valor returnado
  * será o tamanho ocupado do buffer RXD .
  */
-int usart_iSizeBuffer(const TTY xtty){
-	if(usart_bCheckError(xtty)) return -1;
-	return xUsartIT[xtty].uSizeBuffer;
+UBaseType_t usart_iSizeBuffer(const TTY xtty){
+	if(usart_bCheckError(xtty)) return 0;
+	return QUEUE_SIZE_BUFFER_RXD - uxQueueSpacesAvailable(xUsartIT[xtty].xRXD);
 }
 
 
@@ -142,23 +141,36 @@ int usart_iSizeBuffer(const TTY xtty){
  */
 void usart_vCleanBuffer(const TTY xtty){
 	if(usart_bCheckError(xtty)) return;
-	for(size_t uIdx=0; uIdx<SIZE_BUFFER_RXD; uIdx++){
-		xUsartIT[xtty].pcRXD[uIdx] = 0x00U;
-	}
-	xUsartIT[xtty].uSizeBuffer = 0x00U;
+	xQueueReset(xUsartIT[xtty].xRXD);
 }
 
 
 /**
  * @brief pegar o buffer RXD da usart.
+ * 
  * @param tty, enumeração ttyUSART1, ttyUSART2 ttyUSART3, caso
  * xtty seja invalido a função não será executada.
- * @return CCHR: retorna o ponteiro do tipo CCHR (const char *)
- * do buffer pcRXD. caso xtty seja invalido será retornado NULL
+ * 
+ * @param pcSwap onde serão salvo os dados da queue
+ * 
+ * @return CCHR: retorna pcSwap
  */
-CCHR *usart_pcGetBuffer(TTY xtty){
+char *usart_pcGetBuffer(TTY xtty, char *pcSwap){
 	if(usart_bCheckError(xtty)) return NULL;
-	return (CCHR*)xUsartIT[xtty].pcRXD;
+
+
+	
+	// UBaseType_t uSpace =  QUEUE_SIZE_BUFFER_RXD - uxQueueSpacesAvailable(xUsartIT[xtty].xRXD);
+
+	// if( ( strlen( xUsartIT[xtty].pcRXD ) + uSpace ) < QUEUE_SIZE_BUFFER_RXD){
+
+		// while ( xQueueReceive( xUsartIT[xtty].xRXD, &pcSwap[0], 0 ) == pdPASS ){
+		// 	strcat(pcSwap, pcSwap);
+		// 	usart_vAtomicSendChr(xtty, pcSwap[0]);
+		// }
+	// }
+
+	return pcSwap;
 }
 
 
@@ -174,7 +186,8 @@ CCHR *usart_pcGetBuffer(TTY xtty){
 void usart_vSendChr(const TTY xtty, CCHR ccChr){
 	if(usart_bCheckError(xtty)) return;
 
-	/* se a queue estiver cheia esse while possibilita a troca de
+	/**
+	 * se a queue estiver cheia esse while possibilita a troca de
 	 * contexto entre tasks, caso a mensagem transmitida seja muito
 	 * grandeve a velocidade da cominicassão muito baixa.
 	 */
@@ -221,7 +234,6 @@ void usart_vSendBlk(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 void usart_vSendBlkLn(const TTY xtty, CCHR *pcBuffer, const size_t cuSize){
 	usart_vSendBlk(xtty, pcBuffer, cuSize);
 	usart_vSendBlk(xtty, "\r\n", 2);
-
 }
 
 
@@ -265,7 +277,9 @@ void usart_vSendStrLn(const TTY xtty, CCHR *pcString){
  */
 _bool usart_bCheckError(const TTY xtty){
 	if(xtty >= ttyNUM)			return	TRUE;
-	if(xUsartIT[xtty].pcRXD == NULL)	return	TRUE;
+	if(xUsartIT[xtty].xRXD	== NULL)	return	TRUE;
+	if(xUsartIT[xtty].xTXD	== NULL)	return	TRUE;
+
 	return 						FALSE;
 }
 
@@ -277,13 +291,13 @@ _bool usart_bCheckError(const TTY xtty){
 void usart_vInitVars(const TTY xtty){
 
 	if(xUsartIT[xtty].xTXD == NULL){
-		xUsartIT[xtty].xTXD = xQueueCreate(SIZE_BUFFER_TXD, sizeof(char));
+		xUsartIT[xtty].xTXD = xQueueCreate(QUEUE_SIZE_BUFFER_TXD, sizeof(char));
 	}
 
-	for(size_t uIdx=0; uIdx<SIZE_BUFFER_RXD; uIdx++){
-		xUsartIT[xtty].pcRXD[uIdx] = 0x00U;
+	if(xUsartIT[xtty].xRXD == NULL){
+		xUsartIT[xtty].xRXD = xQueueCreate(QUEUE_SIZE_BUFFER_RXD, sizeof(char));
 	}
-	xUsartIT[xtty].uSizeBuffer = 0x00U;
+
 }
 
 
@@ -308,10 +322,12 @@ void usart_vInitIT(const TTY xtty){
  * de troca de contexto em interruições. 
  */
 void usart_vIT(const TTY xtty, BaseType_t *const pxHigherPriorityTaskWoken){
-
-	// interrupção por recebimento de um framer 
+	/**
+	 * interrupção por recebimento de um framer
+	 */ 
 	if(__HAL_UART_GET_FLAG(&xUsartIT[xtty].xHandle, USART_FLAG_RXNE) == SET){
 		__HAL_USART_CLEAR_FLAG(&xUsartIT[xtty].xHandle, USART_FLAG_RXNE);
+
 		
 		u8 uBuffer = 0x00U;
 
@@ -321,14 +337,15 @@ void usart_vIT(const TTY xtty, BaseType_t *const pxHigherPriorityTaskWoken){
 			uBuffer = ( xUsartIT[xtty].xHandle.Instance->DR & 0x007F);
 		}
 
-		if(xUsartIT[xtty].uSizeBuffer < SIZE_BUFFER_RXD){
-			xUsartIT[xtty].pcRXD[xUsartIT[xtty].uSizeBuffer++] = uBuffer;
-		}
+		xQueueOverwriteFromISR(xUsartIT[xtty].xRXD, &uBuffer, pxHigherPriorityTaskWoken);
 
 
-	// interrupção por envio de um framer 
-	} else if(__HAL_UART_GET_FLAG(&xUsartIT[xtty].xHandle, USART_FLAG_TXE) == SET ){
+	/**
+	 * interrupção por envio de um framer
+	 */ 
+	} if(__HAL_UART_GET_FLAG(&xUsartIT[xtty].xHandle, USART_FLAG_TXE) == SET ){
 		__HAL_USART_CLEAR_FLAG(&xUsartIT[xtty].xHandle, USART_FLAG_TXE);
+
 
 		u8 uBuffer = 0x00U;
 		
@@ -336,11 +353,21 @@ void usart_vIT(const TTY xtty, BaseType_t *const pxHigherPriorityTaskWoken){
 			// xUsartIT[xtty].xHandle.Instance->DR = (uBuffer & 0xFFU);
 			HAL_UART_Transmit(&xUsartIT[xtty].xHandle, (u8*)&uBuffer, 1, UART_TRANSMIT_TIMEOUT);
 		} else {
-			// quando a queue estiver vazei a interrupção não deve ser chamada novamente
+			// quando a queue estiver vazia a interrupção não deve ser chamada novamente
 			// amentos que a queue seja populada novamente
 			__HAL_USART_DISABLE_IT(&xUsartIT[xtty].xHandle, USART_IT_TXE);
+
 		}
 	}
+
+
+	/**
+	 * TODO: descobri o por que disso 
+	 * ! Por algum motivo tive que deixar isso aqui pois de a serial 
+	 * ! receber muitos dados ela trava e para de ativar a interrupção
+	 * ! USART_IT_RXNE
+	 */
+	__HAL_USART_ENABLE_IT(&xUsartIT[xtty].xHandle, USART_IT_RXNE);	
 }
 
 
