@@ -133,8 +133,8 @@
  * Onde cada chX é um índice do vetor que vai de 0 a 29.
  * 
  */
-#define ADC1_RANK_NUM 		( 2 )
-#define ADC1_SIZE_BUFFER 	( ADC1_RANK_NUM * ADC1_RANK_NUM )
+#define ADC1_RANK_NUM 		( 1 )
+#define ADC1_SIZE_BUFFER 	( ADC1_RANK_NUM * 7950 )
 
 /**
  * Utilise essas macros para o tempo de amostragem de cada 

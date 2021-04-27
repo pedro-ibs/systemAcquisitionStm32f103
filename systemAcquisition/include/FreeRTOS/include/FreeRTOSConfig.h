@@ -1,4 +1,4 @@
-/*
+/**
  * FreeRTOS Kernel V10.2.1
  * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
@@ -41,7 +41,7 @@
  *----------------------------------------------------------*/
 
 
-/*
+/**
  * Special note to ARM Cortex-M users: ARM Cortex-M3, ARM Cortex-M4 and ARM Cortex-M4F
  * ports need FreeRTOS handlers to be installed on the SysTick, PendSV and SVCCall interrupt
  * vectors. The vector table can be populated directly with the FreeRTOS defined xPortSysTickHandler(),
@@ -67,7 +67,7 @@
 #define configTICK_RATE_HZ			( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES			( 5 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 32 )
-#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 9 * 1024 ) )
+#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 2 * 1024 ) )
 #define configMAX_TASK_NAME_LEN			( 16 )
 #define configUSE_TRACE_FACILITY		( 1 )
 #define configUSE_16_BIT_TICKS			( 0 )

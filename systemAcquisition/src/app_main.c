@@ -58,13 +58,10 @@
 
 /* Private macro -------------------------------------------------------------*/
 
-#define SIZE_BUFFER	(2 * ADC1_SIZE_BUFFER)
 
 /* Private variables ---------------------------------------------------------*/
-static TaskHandle_t xMainAppHandle	= NULL;
-static QueueSetHandle_t	xQueue		= NULL;
-static char pcBuffer[SIZE_BUFFER]	= "";
-
+static const u16 *puAdcBuffer	= NULL;
+static char pcSwap[10]		= "";
 /* Private Functions ---------------------------------------------------------*/
 void main_vApp(void * pvParameters);
 void main_vInitTasks(void);
@@ -87,19 +84,20 @@ void blink(void * pvParameters);
  * 
  */
 void main_vSetup(void){
-	
-	if(xQueue == NULL){
-		xQueue = xQueueCreate(2, SIZE_BUFFER);
-	}
-	
 	gpio_vInitAll();
 	gpio_vDisableDebug();
 	rtc_vInit();
-	usart_vSetup(ttyUSART1, usart_1M0bps);
-	adc1_vInitGetSample(1 , FREG_TO_COUNTER(50000, 1));
-
-	usart_vAtomicSendStrLn(ttyUSART1, "Sitema carregado");
+	iwdg_vInit();
+	usart_vSetup(ttyUSART1, usart_115k2bps);
 	vTaskDelay(_5S);
+	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
+	gpio_vWrite(GPIOC13, TRUE);
+
+
+	/**
+	 * pegar endereço do buffer do adc
+	 */
+	puAdcBuffer = adc1_puGetBuffer();
 
 }
 
@@ -108,9 +106,7 @@ void main_vSetup(void){
  * @param none 
  * 
  */
-void main_vInitTasks(void) {
-
-}
+void main_vInitTasks(void) { }
 
 /**
  * @brief
@@ -118,9 +114,41 @@ void main_vInitTasks(void) {
  * 
  */
 void main_vLoop(void){
-	if(xQueueReceive(xQueue, pcBuffer, portMAX_DELAY)){
-		usart_vAtomicSendBlk(ttyUSART1, pcBuffer, SIZE_BUFFER);
+	
+	/**
+	 * a aquisição le 50000 pontos por segundo portanto em FreeRTOS/Drivers/adc.h
+	 * na macro ADC1_SIZE_BUFFER determina quando pontos o DMA lê buffer antes de
+	 * chamar a interrupção (que é chamada quando o DMA popula o buffer por inteiro )
+	 * 
+	 * com o valor de 7950 a aquisição leva 159ms
+	 * 
+	 * na interrupção acd1_vBufferDoneHandler é dado o comando para que o DMA pare 
+	 * o ciclo de aquisição, dessa maneira o buffer é populado apenas uma única vez
+	 * 
+	 * o led se manterá ligado enquanto o buffer estiver sendo popiçado pelo DMA
+	 */
+	gpio_vWrite(GPIOC13, FALSE);
+	adc1_vInitGetSample(1, FREG_TO_COUNTER(50000, 1));
+	
+	/**
+	 * esperar que o DMA poule o buffer
+	 */
+	vTaskDelay(_1S);
+
+	/**
+	 * enviar os em formado CSV
+	 */	
+	for (size_t uIdx = 0; uIdx < ADC1_SIZE_BUFFER; uIdx++){
+		itoa(puAdcBuffer[uIdx], pcSwap, DEC);
+		strcat(pcSwap, ";");
+		usart_vAtomicSendStrLn(ttyUSART1, pcSwap);
 	}
+	usart_vAtomicSendStrLn(ttyUSART1, "\r\n");
+	
+	/**
+	 * esperar um novo ciclo
+	 */
+	vTaskDelay(_9S);
 }
 
 
@@ -130,6 +158,15 @@ void main_vLoop(void){
  */
 void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken){
 	(void) pxHigherPriorityTaskWoken;
+
+	/**
+	 * quando essa interrupção ser chamada significa 
+	 * que o buffer está populado, portanto a aquisição
+	 * pode ser parada 
+	 */
+	adc1_vDeInitGetSample();
+	tim3_vDeinit();
+	gpio_vWrite(GPIOC13, TRUE);
 }
 
 /**
@@ -137,15 +174,8 @@ void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken){
  */
 void adc1_vDMA1Ch1Handler( BaseType_t *const pxHigherPriorityTaskWoken ){
 	(void) pxHigherPriorityTaskWoken;
-	/**
-	 * Copiar os dado para o buffer 
-	 */
-	if (xQueueSendFromISR(xQueue, adc1_puGetBuffer(), pxHigherPriorityTaskWoken) == pdFAIL){
-		/**
-		 * Caso a transmissão  seja muito lenta 
-		 */
-		NVIC_SystemReset(); 
-	}
+
+
 }
 
 /**
@@ -177,7 +207,7 @@ void main_vApp(void * pvParameters){
  */
 extern void vStartupSystem(void) {
 	/* iniciar task principal */
-	if(xTaskCreate( main_vApp, "app_main", configMINIMAL_STACK_SIZE*4, NULL, mainSET_PRIORITY, &xMainAppHandle) == pdFAIL){
+	if(xTaskCreate( main_vApp, "app_main", configMINIMAL_STACK_SIZE*2, NULL, mainSET_PRIORITY, NULL) == pdFAIL){
 		NVIC_SystemReset();		// RESET MCU
 	} 
 }
