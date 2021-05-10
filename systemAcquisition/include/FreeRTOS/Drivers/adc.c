@@ -195,7 +195,7 @@ void adc1_vGiveAccess(){
 /**
  * @brief desativa acoleta de dados
  * @note desativa o ADC1 e canaisrespectivos DMA e TIMER
- * @param none
+ *
  */
 void adc1_vDeInitGetSample(void){
 
@@ -270,7 +270,7 @@ u16 *adc1_puCopyBuffer( u16 *puSaveAt ){
 /**
  * @brief retorne o endereço do buffer de aquisição
  * do adc1
- * @param none
+ *
  * @return (const u16*)
  */
 const u16 *adc1_puGetBuffer(void){
@@ -320,7 +320,7 @@ void adc1_vDeInitChannel(const AdcChannel cuChannel){
 
 /**
  * @brief Inicializa as variaveis utilizada no driver adc.h
- * @param none
+ *
  */
 void adc1_vInitVar(void){
 	if(xAdc1Semaphore == NULL){
@@ -334,7 +334,7 @@ void adc1_vInitVar(void){
 
 /**
  * @brief Configura e inicializa do DMA
- * @param none
+ *
  */
 void adc1_vDMA1(void){
 

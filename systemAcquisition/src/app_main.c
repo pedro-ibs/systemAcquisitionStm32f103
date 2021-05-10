@@ -80,7 +80,7 @@ void blink(void * pvParameters);
 
 /**
  * @brief inicia configurações básicas da aplicação
- * @param none 
+ * 
  * 
  */
 void main_vSetup(void){
@@ -103,7 +103,7 @@ void main_vSetup(void){
 
 /**
  * @brief inicia outras tasks
- * @param none 
+ * 
  * 
  */
 void main_vInitTasks(void) { }
@@ -136,7 +136,7 @@ void main_vLoop(void){
 	vTaskDelay(_1S);
 
 	/**
-	 * enviar os em formado CSV
+	 * enviar os dados em formado CSV
 	 */	
 	for (size_t uIdx = 0; uIdx < ADC1_SIZE_BUFFER; uIdx++){
 		itoa(puAdcBuffer[uIdx], pcSwap, DEC);

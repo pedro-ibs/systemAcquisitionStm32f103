@@ -117,7 +117,7 @@ void rtc_vInit(void){
  * de ticks de uma task. como o FreeRTOS está configurado para
  * contar um tick acada 1 ms essa função pega a milezima parte
  * disso.
- * @param none.
+ *.
  * @return segundos, [TickType_t]
  * 
  */
@@ -128,7 +128,7 @@ TickType_t rtc_xTaskGetSeconds( void ){
 
 /**
  * @brief ler tempo, horas, minutos e segundos
- * @param none
+ *
  * @return RTC_TimeTypeDef
  */
 RTC_TimeTypeDef rtc_xGetTime(void){
@@ -142,7 +142,7 @@ RTC_TimeTypeDef rtc_xGetTime(void){
 
 /**
  * @brief ler dia, dia da semana, mes e ano 
- * @param none
+ *
  * @return RTC_DateTypeDef
  */
 RTC_DateTypeDef rtc_xGetDate(void){

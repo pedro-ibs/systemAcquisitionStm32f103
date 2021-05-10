@@ -109,7 +109,7 @@ void iwdg_vTask(void * pvParameters);
 
 /**
  * @brief iniciar temporisador watch dogs
- * @param none
+ *
  */
 void iwdg_vInit(void){
 	if((xQueueIwdg == NULL) ){
@@ -169,7 +169,7 @@ void iwdg_vStopConter( cu8 cuVirtualConter ){
 
 /**
  * @brief task do temporisador watch dogs
- * @param none
+ *
  * 
  */
 void iwdg_vTask(void * pvParameters){

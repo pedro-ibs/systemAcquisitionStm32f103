@@ -92,7 +92,7 @@ static SemaphoreHandle_t xFlash	= NULL;
 /**
  * @brief inicialisa o mutex, limpa o buffer de transferência
  * @note: deve ser iinicialisado dentro de uma task
- * @param none
+ *
  * 
  */
 void flash_vInit( void ){
@@ -172,7 +172,7 @@ u8 *flash_puCopyBuffer( u8* puCopyTo ){
  * sempre utiliso o controle de acesso da flash quando estiver
  * manipulando este ponteiro
  * 
- * @param none
+ *
  */
 u8 *flash_puGetBuffer(void){
 	return puBuffer;
@@ -182,7 +182,7 @@ u8 *flash_puGetBuffer(void){
 /**
  * @brief escreve o que tem no buffer na flash
  * 
- * @param none
+ *
  */
 void flash_vBufferToFlash(void){
 	u64 uSwap = 0;
@@ -197,7 +197,7 @@ void flash_vBufferToFlash(void){
 /**
  * @brief escreve o que tem nq flash no buffer
  * 
- * @param none
+ *
  */
 void flash_vFlashToBuffer(void){
 	memcpy(puBuffer, (void*)FLASH_BASE_ADDRESS, PAGESIZE);
@@ -207,7 +207,7 @@ void flash_vFlashToBuffer(void){
 /**
  * @brief apaga a pagina destinada a salvar dados não volateis
  * 
- * @param none
+ *
  */
 _bool flash_vErase( void ){
 	u32 uErr = 0;

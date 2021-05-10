@@ -171,7 +171,7 @@ void tim3_vStartIT(cu32 uPrescaler, cu32 uPeriod) {
 
 /**
  * @brief Desativa o timer 3
- * @param none
+ *
  * 
  */
 void tim3_vDeinit( void ){
@@ -200,7 +200,7 @@ void tim3_vDeinit( void ){
 
 /**
  * @brief Inicializa as variaveis utilizada no driver adc.h
- * @param none
+ *
  */
 void tim3_vInitVar(void){
 	if(xTim3Semaphore == NULL){

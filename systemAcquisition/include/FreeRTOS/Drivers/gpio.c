@@ -102,7 +102,7 @@ static const xGpioPin xGpio[GPIO_NUM] = {
 
 /**
  * @brief habilitar clock das portas GPIO
- * @param none
+ *
  * 
  */
 void gpio_vInitAll( void ) {
@@ -123,7 +123,7 @@ void gpio_vInitAll( void ) {
 /**
  * @brief desabilita a comunicação JTAG. para poder 
  * usar livremente os pinos GPIO3, GPIOB4 e GPIOA15
- * @param none.
+ *.
  */
 void gpio_vDisableDebug (void) {
 	__HAL_RCC_AFIO_CLK_ENABLE();	
