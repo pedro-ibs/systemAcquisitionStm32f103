@@ -134,7 +134,7 @@
  * 
  */
 #define ADC1_RANK_NUM 		( 1 )
-#define ADC1_SIZE_BUFFER 	( ADC1_RANK_NUM * 7950 )
+#define ADC1_SIZE_BUFFER 	( ADC1_RANK_NUM * 7680 )
 
 /**
  * Utilise essas macros para o tempo de amostragem de cada 

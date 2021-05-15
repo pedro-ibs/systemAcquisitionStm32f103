@@ -61,7 +61,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 static const u16 *puAdcBuffer	= NULL;
-static char pcSwap[10]		= "";
+static char pcSwap[30]		= "";
 /* Private Functions ---------------------------------------------------------*/
 void main_vApp(void * pvParameters);
 void main_vInitTasks(void);
@@ -93,11 +93,13 @@ void main_vSetup(void){
 	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
 	gpio_vWrite(GPIOC13, TRUE);
 
-
+	usart_vAtomicSendStrLn(ttyUSART1, "AMOSTRA;\r\n");
 	/**
 	 * pegar endereço do buffer do adc
 	 */
 	puAdcBuffer = adc1_puGetBuffer();
+
+
 
 }
 
@@ -116,11 +118,11 @@ void main_vInitTasks(void) { }
 void main_vLoop(void){
 	
 	/**
-	 * a aquisição le 50000 pontos por segundo portanto em FreeRTOS/Drivers/adc.h
+	 * a aquisição le 51200 pontos por segundo portanto em FreeRTOS/Drivers/adc.h
 	 * na macro ADC1_SIZE_BUFFER determina quando pontos o DMA lê buffer antes de
 	 * chamar a interrupção (que é chamada quando o DMA popula o buffer por inteiro )
 	 * 
-	 * com o valor de 7950 a aquisição leva 159ms
+	 * com o valor de 7680 a aquisição leva 150ms
 	 * 
 	 * na interrupção acd1_vBufferDoneHandler é dado o comando para que o DMA pare 
 	 * o ciclo de aquisição, dessa maneira o buffer é populado apenas uma única vez
@@ -128,7 +130,7 @@ void main_vLoop(void){
 	 * o led se manterá ligado enquanto o buffer estiver sendo popiçado pelo DMA
 	 */
 	gpio_vWrite(GPIOC13, FALSE);
-	adc1_vInitGetSample(1, FREG_TO_COUNTER(50000, 1));
+	adc1_vInitGetSample(1, FREG_TO_COUNTER(51200, 1));
 	
 	/**
 	 * esperar que o DMA poule o buffer
@@ -139,11 +141,12 @@ void main_vLoop(void){
 	 * enviar os dados em formado CSV
 	 */	
 	for (size_t uIdx = 0; uIdx < ADC1_SIZE_BUFFER; uIdx++){
+		/* amostra */
 		itoa(puAdcBuffer[uIdx], pcSwap, DEC);
 		strcat(pcSwap, ";");
 		usart_vAtomicSendStrLn(ttyUSART1, pcSwap);
 	}
-	usart_vAtomicSendStrLn(ttyUSART1, "\r\n");
+	usart_vAtomicSendStrLn(ttyUSART1, "END\r\n");
 	
 	/**
 	 * esperar um novo ciclo
@@ -207,7 +210,7 @@ void main_vApp(void * pvParameters){
  */
 extern void vStartupSystem(void) {
 	/* iniciar task principal */
-	if(xTaskCreate( main_vApp, "app_main", configMINIMAL_STACK_SIZE*2, NULL, mainSET_PRIORITY, NULL) == pdFAIL){
+	if(xTaskCreate( main_vApp, "app_main", configMINIMAL_STACK_SIZE*3, NULL, mainSET_PRIORITY, NULL) == pdFAIL){
 		NVIC_SystemReset();		// RESET MCU
 	} 
 }
