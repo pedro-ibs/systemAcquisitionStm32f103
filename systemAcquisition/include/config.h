@@ -29,7 +29,7 @@
 #define SAMPLE_SIZE		( ( FREQUENCY_HZ*TIME_TO_GET_S ) / 1000	)
 
 
-#define SAMPLES_MAX		( 2 )
+#define SAMPLES_MAX		( 12 )
 
 /* Definition ----------------------------------------------------------------*/
 #endif /* macros_app_config_H_ */
