@@ -29,7 +29,7 @@ end
 # unset irrelevant variables
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/pibs/Documentos/workspace_IFSP/TopicosEspeciais/Aula06/venv"
+set -gx VIRTUAL_ENV "/home/pibs/Documentos/workspace_MA/m41/vscode/m41_relise/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

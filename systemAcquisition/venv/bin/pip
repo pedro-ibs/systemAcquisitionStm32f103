@@ -1,4 +1,4 @@
-#!/home/pibs/Documentos/workspace_IFSP/TopicosEspeciais/Aula06/venv/bin/python
+#!/home/pibs/Documentos/workspace_MA/m41/vscode/m41_relise/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

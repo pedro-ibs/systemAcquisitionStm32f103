@@ -1,7 +1,7 @@
 /**
- * main.c
+ * app_main.c
  *
- *  @date Created at:	22/02/2021 11:54:32
+ *  @date Created at:	13/07/2021 14:09:30
  *	@author:	Pedro Igor B. S.
  *	@email:		pibscontato@gmail.com
  * 	GitHub:		https://github.com/pedro-ibs
@@ -25,51 +25,123 @@
  * -------------------------------------------------------------------
  * ########################################################
  *
- * Use este aquivo para inicialisar os perifericos de hardware
- * e todas as outras tasks da aplicação, veja FreeRTOSConfig.h
- * para identifica as configurações do sistema operacional
+ * Os pinos e serial usados estão definidos em hardware.h
+ * Demais configurações estão em consfig.h 
  * 
- * em ./core/ estão os inicialisadores básicos do framework
- * stm32cube
- *
+ * funcionameno:
+ * 
+ * * Inicia o freeRTOS.
+ * 	Inicia os drives e configura o MCU isso ocorre em main.c
+ * 	Configurações avançadas do sietema encontram se em:
+ * 		FreeRTOS/include/FreeRTOSConfig.h
+ * 	
+ * 
+ * * Inicia o setup da aplicação
+ * 	Antes do loop é enviado ascolunas do csv.
+ * 
+ * * Loop:
+ * 	O Semaforo é utilizado para controle de acesso do buffer entre o
+ * 	loop app_main e o conjundo de aquisição (sendo eles o ADC1, DMA e
+ * 	TIM3) alem disso detemina o fluxo de operação, como se fosse uma
+ * 	flag.
+ * 
+ * 	Quando o semaforo é devolvido pelo conjundo de aquisição o loop
+ * 	do app_main pega o acesso e trasmite os dados, e imediatamente após
+ * 	o logo apos devolver o semaforo o conjunto de aquisição pega o semaforo
+ * 	e começa a coleta de dados e devolve o semaforo e o loop se inicia.
+ * 
+ * 	NOTA: Enquanto o conjunto de aquisição estiver om o semaforo o loop 
+ * 	ficará travado. 
+ * 
  */
 
 
-/* Includes ------------------------------------------------------------------*/
-#include <core/includes.h>
+
+/* Includes ---------------------------------------------------------------------------------------------------------------------------------------------*/
+#include <config.h>
+#include <core.h>
 #include <FreeRTOS/include/FreeRTOSConfig.h>
-#include <FreeRTOS/include/FreeRTOS.h>
-#include <FreeRTOS/include/task.h>
-#include <FreeRTOS/include/list.h>
-#include <FreeRTOS/include/queue.h>
-#include <FreeRTOS/include/semphr.h>
-#include <FreeRTOS/include/portable.h>
+#include <FreeRTOS/includes.h>
 
-#include <FreeRTOS/Drivers/gpio.h>
-#include <FreeRTOS/Drivers/usart.h>
-#include <FreeRTOS/Drivers/adc.h>
-#include <FreeRTOS/Drivers/rtc.h>
-#include <FreeRTOS/Drivers/timer.h>
-#include <FreeRTOS/Drivers/watchDogs.h>
-#include <FreeRTOS/Drivers/flash.h>
-
-#include <lib/textProtocol/protocol.h>
+/* Private macro ----------------------------------------------------------------------------------------------------------------------------------------*/
+/* Private variables ------------------------------------------------------------------------------------------------------------------------------------*/
+static const AdcChannel psxAdc[] 	= {CH1, CH2, CH3};	// Canais que serão lidos 
+static u16 spuBuffer[SAMPLE_SIZE]	= { 0 };		// Buffer de aquisição
+static SemaphoreHandle_t spxSemaphore	= NULL;			// Samaforo usado como MUTEX e flag
+static u8 suIdx 			= 0;			// Indice do canal adc
 
 
-/* Private macro -------------------------------------------------------------*/
+/* Private Functions ------------------------------------------------------------------------------------------------------------------------------------*/
+void app_vSatartGetSample(const AdcChannel cxChannel);
+void app_vStopGetSample(const AdcChannel cxChannel, BaseType_t *const pxHigherPriorityTaskWoken);
+/* Functions --------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
-/* Private variables ---------------------------------------------------------*/
-static const u16 *puAdcBuffer	= NULL;
-static char pcSwap[30]		= "";
-/* Private Functions ---------------------------------------------------------*/
-void main_vApp(void * pvParameters);
-void main_vInitTasks(void);
-void main_vSetup(void);
-void main_vLoop(void);
+void main_vApp(void * pvParameters){
+	(void) pvParameters;
+
+	if ( spxSemaphore == NULL){
+		spxSemaphore = xSemaphoreCreateMutex();
+	}
+
+	// usart_vSetup(STDIO,	usart_115k2bps);
+	usart_vSetup(STDIO,	usart_500k0bps);
+	
+	gpio_vMode(LED, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
+
+	for (u16 uIdx = 0; uIdx < SAMPLE_SIZE; uIdx++) {
+		spuBuffer[uIdx] = 0;
+	}
+	
+
+	vTaskDelay(_3S);
+	usart_vSendStr(STDIO, "ACC,SAMPLE,VALUE");
+	usart_vSendChr(STDIO, '\n');
+
+	u8 uSample = 1;
+
+	while (TRUE) {
+
+		if(xSemaphoreTake(spxSemaphore, portMAX_DELAY) == pdPASS){
+			char puSwap[20];
+		
+			/**
+			 * mostrar valores lidos no formato CSV
+			 */
+			for (u16 uIdx = 0; uIdx < SAMPLE_SIZE; uIdx++) {
+				usart_vSendStr(STDIO, itoa(suIdx, puSwap, HEX));
+				usart_vSendChr(STDIO, ',');
+				usart_vSendStr(STDIO, itoa(uSample, puSwap, HEX));
+				usart_vSendChr(STDIO, ',');
+				usart_vSendStr(STDIO, itoa(spuBuffer[uIdx], puSwap, DEC));
+				usart_vSendChr(STDIO, '\n');
+				spuBuffer[uIdx] = 0;
+			}
+
+			/**
+			 * trocar o canal ADC apos atingir  SAMPLES_MAX
+			 */
+			if( uSample++ >= SAMPLES_MAX) {
+				uSample = 1;
+				suIdx++;
+				if(suIdx >= 3) suIdx = 0;
+			}
+
+			xSemaphoreGive(spxSemaphore);
+
+			/**
+			 * vaso queira adicionar um tempo definido no termino 
+			 * da transmissão antes da proxima aquisição coloque
+			 * um vTaskDelay aqui! 
+			 */
+			// vTaskDelay(_1S);
+
+			app_vSatartGetSample(psxAdc[suIdx]);
+		}
+	}
+}
 
 
-void blink(void * pvParameters);
 
 /*########################################################################################################################################################*/
 /*########################################################################################################################################################*/
@@ -78,139 +150,32 @@ void blink(void * pvParameters);
 /*########################################################################################################################################################*/
 
 
-/**
- * @brief inicia configurações básicas da aplicação
- * 
- * 
- */
-void main_vSetup(void){
-	gpio_vInitAll();
-	gpio_vDisableDebug();
-	rtc_vInit();
-	iwdg_vInit();
-	usart_vSetup(ttyUSART1, usart_115k2bps);
-	vTaskDelay(_5S);
-	gpio_vMode(GPIOC13, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL);
-	gpio_vWrite(GPIOC13, TRUE);
-
-	usart_vAtomicSendStrLn(ttyUSART1, "AMOSTRA;\r\n");
-	/**
-	 * pegar endereço do buffer do adc
-	 */
-	puAdcBuffer = adc1_puGetBuffer();
-
-
-
-}
-
-/**
- * @brief inicia outras tasks
- * 
- * 
- */
-void main_vInitTasks(void) { }
-
-/**
- * @brief
- * @param
- * 
- */
-void main_vLoop(void){
-	
-	/**
-	 * a aquisição le 51200 pontos por segundo portanto em FreeRTOS/Drivers/adc.h
-	 * na macro ADC1_SIZE_BUFFER determina quando pontos o DMA lê buffer antes de
-	 * chamar a interrupção (que é chamada quando o DMA popula o buffer por inteiro )
-	 * 
-	 * com o valor de 7680 a aquisição leva 150ms
-	 * 
-	 * na interrupção acd1_vBufferDoneHandler é dado o comando para que o DMA pare 
-	 * o ciclo de aquisição, dessa maneira o buffer é populado apenas uma única vez
-	 * 
-	 * o led se manterá ligado enquanto o buffer estiver sendo popiçado pelo DMA
-	 */
-	gpio_vWrite(GPIOC13, FALSE);
-	adc1_vInitGetSample(1, FREG_TO_COUNTER(51200, 1));
-	
-	/**
-	 * esperar que o DMA poule o buffer
-	 */
-	vTaskDelay(_1S);
-
-	/**
-	 * enviar os dados em formado CSV
-	 */	
-	for (size_t uIdx = 0; uIdx < ADC1_SIZE_BUFFER; uIdx++){
-		/* amostra */
-		itoa(puAdcBuffer[uIdx], pcSwap, DEC);
-		strcat(pcSwap, ";");
-		usart_vAtomicSendStrLn(ttyUSART1, pcSwap);
+void app_vSatartGetSample(const AdcChannel cxChannel){
+	if(xSemaphoreTake(spxSemaphore, portMAX_DELAY) == pdPASS){
+		adc1_vSetGetSampleMode(1);
+		adc1_vSetChannel(cxChannel, ADC_SAMPLETIME_1CYCLE_5,  ADC_REGULAR_RANK_1);
+		adc1_vStartGetSampleMode( spuBuffer, SAMPLE_SIZE, 1, FREG_TO_COUNTER(FREQUENCY_HZ, 1) );
+		gpio_vWrite(LED, TRUE);
 	}
-	usart_vAtomicSendStrLn(ttyUSART1, "END\r\n");
-	
-	/**
-	 * esperar um novo ciclo
-	 */
-	vTaskDelay(_9S);
+}
+
+void app_vStopGetSample(const AdcChannel cxChannel, BaseType_t *const pxHigherPriorityTaskWoken){
+	adc1_vDeInitChannel(cxChannel);
+	adc1_vDeInitFromISR(pxHigherPriorityTaskWoken);
+	xSemaphoreGiveFromISR(spxSemaphore, pxHigherPriorityTaskWoken);
+	gpio_vWrite(LED, FALSE);
 }
 
 
 
-/**
- * usado pelo adc1 
- */
+void tim3_vHandler(BaseType_t *const pxHigherPriorityTaskWoken){
+(void) pxHigherPriorityTaskWoken;
+}
+
+void adc1_vDMA1Ch1Handler(BaseType_t *const pxHigherPriorityTaskWoken){
+	(void) pxHigherPriorityTaskWoken;
+}
+
 void acd1_vBufferDoneHandler(BaseType_t *const pxHigherPriorityTaskWoken){
-	(void) pxHigherPriorityTaskWoken;
-
-	/**
-	 * quando essa interrupção ser chamada significa 
-	 * que o buffer está populado, portanto a aquisição
-	 * pode ser parada 
-	 */
-	adc1_vDeInitGetSample();
-	tim3_vDeinit();
-	gpio_vWrite(GPIOC13, TRUE);
-}
-
-/**
- * usado pelo adc1
- */
-void adc1_vDMA1Ch1Handler( BaseType_t *const pxHigherPriorityTaskWoken ){
-	(void) pxHigherPriorityTaskWoken;
-
-
-}
-
-/**
- * usado pelo adc1 e/ou tim3
- */
-void tim3_vHandler( BaseType_t *const pxHigherPriorityTaskWoken ){
-	(void) pxHigherPriorityTaskWoken;
-}
-
-
-
-/**
- * @brief 
- * @param pvParameters, ponteiro do parametro passado na criação da task não nao utilizado nesta 
- * função.
- */
-void main_vApp(void * pvParameters){
-	(void) pvParameters;
-	main_vSetup();
-	main_vInitTasks();
-	while (TRUE) { main_vLoop(); }
-	return;
-}
-
-
-/**
- * @brief inicia a task main da aplicação, essa função é execurada dendro da main.c no FreeRTOS 
- * @param None
- */
-extern void vStartupSystem(void) {
-	/* iniciar task principal */
-	if(xTaskCreate( main_vApp, "app_main", configMINIMAL_STACK_SIZE*3, NULL, mainSET_PRIORITY, NULL) == pdFAIL){
-		NVIC_SystemReset();		// RESET MCU
-	} 
+	app_vStopGetSample(psxAdc[suIdx], pxHigherPriorityTaskWoken);
 }

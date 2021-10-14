@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/pibs/Documentos/workspace_IFSP/TopicosEspeciais/Aula06/venv"
+VIRTUAL_ENV="/home/pibs/Documentos/workspace_MA/m41/vscode/m41_relise/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
