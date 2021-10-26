@@ -98,9 +98,38 @@ void main_vApp(void * pvParameters){
 	usart_vSendStr(STDIO, "ACC,SAMPLE,VALUE");
 	usart_vSendChr(STDIO, '\n');
 
-	u8 uSample = 1;
+	_bool bHold	= TRUE;
+	u8 uSample	= 1;
 
 	while (TRUE) {
+
+		/**
+		 * controle de inicio e parada de aquisição 
+		 * ao completar 12 aquisições de um canal o 
+		 * sistema irá travar nesse loop automaticamente
+		 */
+		do {
+			if (usart_iSizeBuffer(STDIO) > 1){
+				/**
+				 *  esperar receber todos bytes
+				 */
+				vTaskDelay(_200MS);
+			
+				if ( textp_bFindString(usart_pcGetBuffer(STDIO), "_START_") ){
+					bHold = FALSE;
+				}
+
+				if ( textp_bFindString(usart_pcGetBuffer(STDIO), "_STOP_") ){
+					bHold = TRUE;
+				}
+
+				usart_vCleanBuffer(STDIO);
+
+			}
+
+			vTaskDelay(_200MS);
+
+		} while (bHold);
 
 		if(xSemaphoreTake(spxSemaphore, portMAX_DELAY) == pdPASS){
 			char puSwap[20];
@@ -113,7 +142,7 @@ void main_vApp(void * pvParameters){
 				usart_vSendChr(STDIO, ',');
 				usart_vSendStr(STDIO, itoa(uSample, puSwap, HEX));
 				usart_vSendChr(STDIO, ',');
-				usart_vSendStr(STDIO, itoa(spuBuffer[uIdx], puSwap, DEC));
+				usart_vSendStr(STDIO, itoa(spuBuffer[uIdx], puSwap, HEX));
 				usart_vSendChr(STDIO, '\n');
 				spuBuffer[uIdx] = 0;
 			}
@@ -122,9 +151,11 @@ void main_vApp(void * pvParameters){
 			 * trocar o canal ADC apos atingir  SAMPLES_MAX
 			 */
 			if( uSample++ >= SAMPLES_MAX) {
+				bHold = FALSE;
 				uSample = 1;
 				suIdx++;
 				if(suIdx >= 3) suIdx = 0;
+
 			}
 
 			xSemaphoreGive(spxSemaphore);
@@ -136,7 +167,11 @@ void main_vApp(void * pvParameters){
 			 */
 			// vTaskDelay(_1S);
 
-			app_vSatartGetSample(psxAdc[suIdx]);
+			/**
+			 * apenas inicia a aquisição por dma caso não 
+			 * esteja travada 
+			 */
+			if(bHold == FALSE) app_vSatartGetSample(psxAdc[suIdx]);
 		}
 	}
 }
