@@ -31,5 +31,14 @@
 
 #define SAMPLES_MAX		( 12 )
 
+
+
+#define CMD_START		"_START_"
+#define SIGINAL_FINISH		"_END_" 
+#define SIGINAL_COLUMNS 	"ADC,SAMPLE,VALUE\n" 
+
+
+
+
 /* Definition ----------------------------------------------------------------*/
 #endif /* macros_app_config_H_ */

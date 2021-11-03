@@ -111,9 +111,9 @@ void main_vApp(void * pvParameters){
 
 			usart_vSendStr(STDIO, "Wait command to satart aquisition\n");		
 			
-			app_vWaitComand("_START_");
+			app_vWaitComand(CMD_START);
 			
-			usart_vSendStr(STDIO, "ADC,SAMPLE,VALUE\n");
+			usart_vSendStr(STDIO, SIGINAL_COLUMNS);
 		}
 
 
@@ -126,11 +126,11 @@ void main_vApp(void * pvParameters){
 			suIdx++;
 			if(suIdx >= 3) suIdx = 0;
 
-			usart_vSendStr(STDIO, "_END_");
+			usart_vSendStr(STDIO, SIGINAL_FINISH);
 
-			app_vWaitComand("_START_");
+			app_vWaitComand(CMD_START);
 
-			usart_vSendStr(STDIO, "ADC,SAMPLE,VALUE\n");
+			usart_vSendStr(STDIO, SIGINAL_COLUMNS);
 		}
 
 
