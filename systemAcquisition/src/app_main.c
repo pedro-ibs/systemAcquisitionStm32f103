@@ -74,6 +74,7 @@ static u8 suIdx 			= 0;			// Indice do canal adc
 /* Private Functions ------------------------------------------------------------------------------------------------------------------------------------*/
 void app_vSatartGetSample(const AdcChannel cxChannel);
 void app_vStopGetSample(const AdcChannel cxChannel, BaseType_t *const pxHigherPriorityTaskWoken);
+void app_vWaitComand(const char * cpcCommand);
 /* Functions --------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
@@ -95,45 +96,54 @@ void main_vApp(void * pvParameters){
 	
 
 	vTaskDelay(_3S);
-	usart_vSendStr(STDIO, "ACC,SAMPLE,VALUE");
-	usart_vSendChr(STDIO, '\n');
 
-	_bool bHold	= TRUE;
-	u8 uSample	= 1;
+	u8 uSample = 0;
 
 	while (TRUE) {
 
 		/**
-		 * controle de inicio e parada de aquisição 
-		 * ao completar 12 aquisições de um canal o 
-		 * sistema irá travar nesse loop automaticamente
+		 * Iniciar a o programa pele primeira vez
+		 * 
+		 * envie o comando _START_ para inicar 
 		 */
-		do {
-			if (usart_iSizeBuffer(STDIO) > 1){
-				/**
-				 *  esperar receber todos bytes
-				 */
-				vTaskDelay(_200MS);
+		if(uSample == 0){
+			uSample = 1;
+
+			usart_vSendStr(STDIO, "Wait command to satart aquisition\n");		
 			
-				if ( textp_bFindString(usart_pcGetBuffer(STDIO), "_START_") ){
-					bHold = FALSE;
-				}
+			app_vWaitComand("_START_");
+			
+			usart_vSendStr(STDIO, "ADC,SAMPLE,VALUE\n");
+		}
 
-				if ( textp_bFindString(usart_pcGetBuffer(STDIO), "_STOP_") ){
-					bHold = TRUE;
-				}
 
-				usart_vCleanBuffer(STDIO);
+		/**
+		 * trocar o canal ADC apos atingir  SAMPLES_MAX. Ao completar
+		 * o ciclo é preciso enviar o comando _START_ novamente
+		 */
+		if( uSample >= SAMPLES_MAX) {
+			uSample = 1;
+			suIdx++;
+			if(suIdx >= 3) suIdx = 0;
 
-			}
+			usart_vSendStr(STDIO, "_END_");
 
-			vTaskDelay(_200MS);
+			app_vWaitComand("_START_");
 
-		} while (bHold);
+			usart_vSendStr(STDIO, "ADC,SAMPLE,VALUE\n");
+		}
 
+
+		app_vSatartGetSample(psxAdc[suIdx]);
+
+		/**
+		 * Para que a trasmissão prossiga o DMA tem que devolver 
+		 * o semaforo 
+		 */
 		if(xSemaphoreTake(spxSemaphore, portMAX_DELAY) == pdPASS){
 			char puSwap[20];
-		
+
+
 			/**
 			 * mostrar valores lidos no formato CSV
 			 */
@@ -147,31 +157,9 @@ void main_vApp(void * pvParameters){
 				spuBuffer[uIdx] = 0;
 			}
 
-			/**
-			 * trocar o canal ADC apos atingir  SAMPLES_MAX
-			 */
-			if( uSample++ >= SAMPLES_MAX) {
-				bHold = FALSE;
-				uSample = 1;
-				suIdx++;
-				if(suIdx >= 3) suIdx = 0;
-
-			}
+			uSample++;
 
 			xSemaphoreGive(spxSemaphore);
-
-			/**
-			 * vaso queira adicionar um tempo definido no termino 
-			 * da transmissão antes da proxima aquisição coloque
-			 * um vTaskDelay aqui! 
-			 */
-			// vTaskDelay(_1S);
-
-			/**
-			 * apenas inicia a aquisição por dma caso não 
-			 * esteja travada 
-			 */
-			if(bHold == FALSE) app_vSatartGetSample(psxAdc[suIdx]);
 		}
 	}
 }
@@ -183,6 +171,31 @@ void main_vApp(void * pvParameters){
 /*########################################################################################################################################################*/
 /*-------------------------------------------------------------------- Private Functions -----------------------------------------------------------------*/
 /*########################################################################################################################################################*/
+
+
+void app_vWaitComand(const char * cpcCommand){
+	while (TRUE) {
+		if (usart_iSizeBuffer(STDIO) > 1){
+			/**
+			 *  esperar receber todos bytes
+			 */
+			vTaskDelay(_200MS);
+		
+			if ( textp_bFindString(usart_pcGetBuffer(STDIO), cpcCommand) ){
+				/**
+				 * apenas inicia a aquisição por dma caso não 
+				 * esteja travada 
+				 */
+				break;
+			}
+
+			usart_vCleanBuffer(STDIO);
+		}
+
+		vTaskDelay(_200MS);
+
+	}
+}
 
 
 void app_vSatartGetSample(const AdcChannel cxChannel){
