@@ -121,7 +121,7 @@ void main_vApp(void * pvParameters){
 		 * trocar o canal ADC apos atingir  SAMPLES_MAX. Ao completar
 		 * o ciclo é preciso enviar o comando _START_ novamente
 		 */
-		if( uSample >= SAMPLES_MAX) {
+		if( uSample > SAMPLES_MAX) {
 			uSample = 1;
 			suIdx++;
 			if(suIdx >= 3) suIdx = 0;
@@ -132,7 +132,6 @@ void main_vApp(void * pvParameters){
 
 			usart_vSendStr(STDIO, SIGINAL_COLUMNS);
 		}
-
 
 		app_vSatartGetSample(psxAdc[suIdx]);
 
@@ -189,14 +188,12 @@ void app_vWaitComand(const char * cpcCommand){
 				break;
 			}
 
-			usart_vCleanBuffer(STDIO);
 		}
-
 		vTaskDelay(_200MS);
-
 	}
-}
 
+	usart_vCleanBuffer(STDIO);
+}
 
 void app_vSatartGetSample(const AdcChannel cxChannel){
 	if(xSemaphoreTake(spxSemaphore, portMAX_DELAY) == pdPASS){

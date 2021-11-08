@@ -34,6 +34,7 @@
 
 
 #define CMD_START		"_START_"
+#define CMD_STOP		"_STOP_"
 #define SIGINAL_FINISH		"_END_" 
 #define SIGINAL_COLUMNS 	"ADC,SAMPLE,VALUE\n" 
 
