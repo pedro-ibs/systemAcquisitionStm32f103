@@ -20,6 +20,10 @@
 #include <FreeRTOS/Drivers/all.h>
 
 
+#ifndef hardware_config_H_
+#define hardware_config_H_
+
+/* macro ---------------------------------------------------------------------*/
 #define STDIO		( ttyUSART1 )
 
 #define LED 		( GPIOC13 )
@@ -28,10 +32,6 @@
 #define	CH2		( ADC1_PA1 )
 #define	CH3		( ADC1_PA2 )
 
-#ifndef hardware_config_H_
-#define hardware_config_H_
-
-/* macro ---------------------------------------------------------------------*/
 
 /* Definition ----------------------------------------------------------------*/
 #endif /* hardware_config_H_ */
